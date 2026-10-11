@@ -17,6 +17,11 @@ docs/**/*.md
 !docs/index.md
 docs/assets/uploads/
 
+# ---- 临时脚本与本地备份（迁移过程中产生，不入库）----
+/_*.py
+/_local_backup/
+/_local_diff/
+
 # ---- 与本项目无关的临时文件 ----
 *.exe
 solution.*
