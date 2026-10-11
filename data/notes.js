@@ -9,14 +9,14 @@ window.SEC_BLOG = {
 "footer":"©2026-2026 By Deus",
 "defaultTheme":"dark",
 "pageSize":8,
-"siteUrl":""
+"siteUrl":"https://deus-088.github.io/secnotes/"
 },
 "stats":{
 "notes":6,
 "categories":4,
-"tags":6,
-"words":3328,
-"builtAt":"2026-10-10 22:29"
+"tags":7,
+"words":3460,
+"builtAt":"2026-10-11 22:29"
 },
 "categories":[
 [
@@ -28,11 +28,11 @@ window.SEC_BLOG = {
 1
 ],
 [
-"未分类",
+"杂谈",
 1
 ],
 [
-"杂谈",
+"计算机基础",
 1
 ]
 ],
@@ -43,6 +43,10 @@ window.SEC_BLOG = {
 ],
 [
 "IP",
+1
+],
+[
+"Linux",
 1
 ],
 [
@@ -64,17 +68,19 @@ window.SEC_BLOG = {
 ],
 "notes":[
 {
-"slug":"111",
-"title":"111",
-"date":"2026-09-24",
-"category":"未分类",
-"tags":[],
-"summary":"标题 一句话说明这篇笔记要解决什么问题。 一、背景 / 适用场景 二、核心内容",
-"body":"# 标题\n\n> 一句话说明这篇笔记要解决什么问题。\n\n## 一、背景 / 适用场景\n\n\n\n## 二、核心内容",
-"source":"notes/111.md",
-"words":30,
+"slug":"linux基础基础",
+"title":"Linux基础",
+"date":"2026-10-11",
+"category":"计算机基础",
+"tags":[
+"Linux"
+],
+"summary":"Linux基础命令与使用 以下均为基于Kali Linux（Debian）所学的命令 一、有关情报收集最常用命令 1.1 curl/wget：HTTP 请求与下载 -I / -i 响应头、体 -I 只看响应头，-i 看响应头＋体，主要看Server、X-Pow…",
+"body":"# Linux基础命令与使用\n\n> 以下均为基于Kali Linux（Debian）所学的命令\n\n## 一、有关情报收集最常用命令\n### 1.1 curl/wget：HTTP 请求与下载\n\n#### -I / -i 响应头、体\n-I 只看响应头，-i 看响应头＋体，主要看Server、X-Powered-By、Set-Cookie、Location\n*此处顾名思义不放图片*\n#### -L 跟随重定向\n跟随重定向的地址继续发送请求，下图为有无-L命令的运行状态\n![图片](assets/uploads/202610/linux-5831828e24.png)\n显而易见，没有加-L的命令的响应体中只回显了301，加了-L的命令回显200，此为重定向\n#### -H：自定义请求头\n\n\n\n\n\n\n## 二、核心内容",
+"source":"notes/linux基础基础.md",
+"words":162,
 "reading_time":1,
-"updated":"2026-10-01",
+"updated":"2026-10-11",
 "draft":false
 },
 {
@@ -90,7 +96,7 @@ window.SEC_BLOG = {
 "source":"notes/数据库基础.md",
 "words":169,
 "reading_time":1,
-"updated":"2026-10-01",
+"updated":"2026-10-11",
 "draft":false
 },
 {
@@ -107,7 +113,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入原理.md",
 "words":672,
 "reading_time":2,
-"updated":"2026-10-01",
+"updated":"2026-10-11",
 "draft":false
 },
 {
@@ -123,7 +129,7 @@ window.SEC_BLOG = {
 "source":"notes/http协议.md",
 "words":1780,
 "reading_time":5,
-"updated":"2026-10-01",
+"updated":"2026-10-11",
 "draft":false
 },
 {
@@ -140,7 +146,7 @@ window.SEC_BLOG = {
 "source":"notes/ip地址与端口.md",
 "words":587,
 "reading_time":2,
-"updated":"2026-10-01",
+"updated":"2026-10-11",
 "draft":false
 },
 {
@@ -154,12 +160,12 @@ window.SEC_BLOG = {
 "source":"notes/这是神的开始吗.md",
 "words":90,
 "reading_time":1,
-"updated":"2026-10-01",
+"updated":"2026-10-11",
 "draft":false
 }
 ],
 "links":{
-"111":[],
+"linux基础基础":[],
 "数据库基础":[],
 "sql注入原理":[],
 "http协议":[],
@@ -167,7 +173,7 @@ window.SEC_BLOG = {
 "这是神的开始吗":[]
 },
 "backlinks":{
-"111":[],
+"linux基础基础":[],
 "数据库基础":[],
 "sql注入原理":[],
 "http协议":[],
@@ -175,7 +181,7 @@ window.SEC_BLOG = {
 "这是神的开始吗":[]
 },
 "broken":{
-"111":[],
+"linux基础基础":[],
 "数据库基础":[],
 "sql注入原理":[],
 "http协议":[],
