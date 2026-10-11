@@ -1,0 +1,25 @@
+# ---- 本地私有，不公开 ----
+.workbuddy/
+.trash/
+export/
+deploy/
+mkdocs-demo/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+
+# ---- 构建产物 ----
+# docs/ 下除首页外都是 tools/sync-docs.py 的生成物，笔记源只在 notes/
+site/
+docs/**/*.md
+!docs/index.md
+docs/assets/uploads/
+
+# ---- 与本项目无关的临时文件 ----
+*.exe
+solution.*
+test_in*.txt
+# 误存成的无扩展名文件（文件名里混了不可见字符，故用前缀匹配）
+代码审计的核心*

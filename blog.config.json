@@ -1,0 +1,10 @@
+{
+  "title": "Deus's Blog",
+  "subtitle": "欢迎访问Deus的个人博客！",
+  "description": "本站使用指南：建议按分类查找对应文章（我写的顺序有点乱）",
+  "author": "Deus",
+  "footer": "©2026-2026 By Deus",
+  "defaultTheme": "dark",
+  "pageSize": 8,
+  "siteUrl": "https://deus-088.github.io/secnotes/"
+}
