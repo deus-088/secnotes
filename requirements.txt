@@ -1,7 +1,0 @@
-# 站点构建依赖（GitHub Actions 与本地共用）
-#
-# 版本策略：MkDocs 2.0 移除了插件系统、重写了主题系统，与 Material 不兼容且没有
-# 迁移路径；官方从 mkdocs-material 9.7.5 起把 mkdocs 依赖锁到 <2。这里显式再锁一道，
-# 避免哪天 2.0 转正后被自动升级打穿构建。
-mkdocs<2
-mkdocs-material>=9.7.5,<10
