@@ -3,29 +3,33 @@
 window.SEC_BLOG = {
 "config":{
 "title":"Deus's Blog",
-"subtitle":"欢迎访问Deus的个人博客！",
-"description":"本站使用指南：建议按分类查找对应文章（我写的顺序有点乱）",
-"author":"Deus",
+"subtitle":"我的笔记库",
+"description":"本站使用指南：按分类查找对应文章（写的顺序有点乱）",
+"author":"",
 "footer":"©2026-2026 By Deus",
 "defaultTheme":"dark",
 "pageSize":8,
 "siteUrl":"https://deus-088.github.io/secnotes/"
 },
 "stats":{
-"notes":6,
-"categories":4,
-"tags":7,
-"words":3460,
-"builtAt":"2026-10-11 22:29"
+"notes":10,
+"categories":5,
+"tags":15,
+"words":5129,
+"builtAt":"2026-10-15 13:22"
 },
 "categories":[
+[
+"SQL注入",
+3
+],
 [
 "Web基础知识",
 3
 ],
 [
-"SQL注入",
-1
+"工具基础",
+2
 ],
 [
 "杂谈",
@@ -37,6 +41,14 @@ window.SEC_BLOG = {
 ]
 ],
 "tags":[
+[
+"sql",
+2
+],
+[
+"BP",
+1
+],
 [
 "HtTP",
 1
@@ -54,7 +66,31 @@ window.SEC_BLOG = {
 1
 ],
 [
+"UNION",
+1
+],
+[
+"dirsearch",
+1
+],
+[
+"kali",
+1
+],
+[
+"nmap",
+1
+],
+[
+"sqlmap",
+1
+],
+[
 "原理",
+1
+],
+[
+"参数位置",
 1
 ],
 [
@@ -68,19 +104,88 @@ window.SEC_BLOG = {
 ],
 "notes":[
 {
-"slug":"linux基础基础",
-"title":"Linux基础",
+"slug":"sql注入二",
+"title":"SQL注入（二）联合注入",
+"date":"2026-10-14",
+"category":"SQL注入",
+"tags":[
+"UNION",
+"sql"
+],
+"summary":"联合注入步骤",
+"body":"# SQL注入（二）——联合注入\n\n## 一、步骤解析\n\n### 1.1 第一步：单引号闭合看是否有漏洞\n### 1.2 第二步：确定查询列数（Order By探测）\n> 因为联合查询要求前后两部分查询的列数必须一致，所以必须先查清楚列数\n\n1. 将URL修改为：`?id=1' order by 1 -- `\n对应的SQL\n```sql\nSELECT * FROM users WHERE id='1' order by 1 --+'\n                                 按表格第一列排序\n```\n1可以改，可以一直枚举下去(2,3,...)，出现报错说明没有这一列,只有前面这么多列\n\n### 1.3 第三步：寻找数据回显位（Union联合查询）  \n找表格哪些列会在网页上显示出来（回显位），目的是为后续的账号密码能靠回显位显示出来\n将URL修改为`?id=-1' union select 1,2,3-- `\n对应SQL\n```sql\nSELECT * FROM users WHERE id='-1'  union SELECT 1,2,3 --+'\n```\nunion后面语句查询到的表格列数必须和前面语句查询到的表格列数保持一致\n使用-1的目的是使第一条查询无结果返回，不影响后面内容显示\n\n### 1.4 第四步：系统化获取信息\n利用回显位查询显示数据库数据\n1. 查询当前数据库:`?name=-1' UNION SELECT 1,database() -- ` （或version()查版本）\n\n2.爆表名:`-1' UNION SELECT 1,group_concat(table_name) FROM information_schema.tables WHERE table_schema=database() --+` \n\n3. 爆字段名:`-1' UNION SELECT 1,group_concat(column_name) FROM information_schema.columns WHERE table_name='users' -- ` \n\n4. 爆字段内容:`-1' UNION SELECT 1,group_concat(username,0x3a,password) FROM users -- ` （group表示合并成一行输出）\n\n获取逻辑：数据库名 → → 表名 → → 列名 → → 具体数据\n\n\n## 二、靶场实战：\n\n- 查询列数，发现2和3有区别，说明有两列\n![图片](assets/uploads/202610/sql-efba8d130b.png)\n\n- 接着找回显位（图免)\n\n- 报库名\n![图片](assets/uploads/202610/sql-16c4c0621c.png)\n\n- 爆列名\n![图片](assets/uploads/202610/sql-7dd7df106b.png)\n\n- 爆重要信息\n![图片](assets/uploads/202610/sql-95a1fce940.png)\n\n## 三、总结\n联合查询注入的核心：\n利用 UNION SELECT 把攻击者构造的查询结果合并到原查询中，并通过页面回显位带出数据\n\n字符型注入的关键是：\n\n先闭合单引号：'；\n\n用 ORDER BY 判断字段数；\n\n用 UNION SELECT 1,2... 找显示位；\n\n用 information_schema 爆库、表、列；\n\n最后取数据",
+"source":"notes/sql注入二.md",
+"words":503,
+"reading_time":2,
+"updated":"2026-10-14",
+"draft":false
+},
+{
+"slug":"立项常见情报收集工具kali",
+"title":"[立项]常见情报收集工具（Kali）",
+"date":"2026-10-13",
+"category":"工具基础",
+"tags":[
+"kali",
+"nmap",
+"sqlmap",
+"dirsearch"
+],
+"summary":"Kali中常见的情报收集工具使用基础，含基础探测、dirsearch、nmap、sqlmap等",
+"body":"# 标题\n\n> 一句话说明这篇笔记要解决什么问题。\n\n## 一、背景 / 适用场景\n\n\n\n## 二、核心内容",
+"source":"notes/立项常见情报收集工具kali.md",
+"words":30,
+"reading_time":1,
+"updated":"2026-10-14",
+"draft":false
+},
+{
+"slug":"立项burp-suite使用基础",
+"title":"[立项]Burp Suite使用基础",
+"date":"2026-10-13",
+"category":"工具基础",
+"tags":[
+"BP"
+],
+"summary":"Burp Suite使用基础",
+"body":"# Burp Suite使用基础\n\n\n## 一、背景 / 适用场景\n\n\n\n## 二、核心内容",
+"source":"notes/立项burp-suite使用基础.md",
+"words":18,
+"reading_time":1,
+"updated":"2026-10-14",
+"draft":false
+},
+{
+"slug":"sql注入实战",
+"title":"SQL注入（一）按参数位置三大类",
+"date":"2026-10-12",
+"category":"SQL注入",
+"tags":[
+"参数位置",
+"sql"
+],
+"summary":"数字型、字符型、搜索型注入与靶场",
+"body":"# SQL注入（一）——按参数位置分三大类（含靶场)\n\n> 基于Pikachu靶场，按参数位置分类\n\n## 一、数字型注入\n### 1.1 概念\n数字型注入是指：SQL语句中的参数处于数字上下文，例如id=1，程序直接把用户输入拼接到SQL中，没有加引号，也没有使用参数化查询\n\n正常请求的请求体\n```http\nid=1&submit=Submit （例）\n```\n攻击者常用\n```http\n1 OR 1=1\n```\n就会生成SQL\n```sql\nSELECT * FROM articles WHERE id = 1 OR 1=1\n```\n由于OR的逻辑，1=1条件恒真，返回了数据库所有内容\n\n### 1.2 判断方法\n可以用curl和BP改包，这里以BP为例\n将请求体改为\n```http\nid=1 AND 1=1&submit=Submit\n```\n再改为\n```http\nid=1 AND 1=2&submit=Submit\n```\n比较两者的返回响应，如果1=1返回正常，1=2返回空或者错误异常说明AND条件被带入SQL，极可能存在数字型注入\n### 1.3 靶场实战\n先用BP抓包，发现其为POST请求，直接通过编辑器将请求体id修改为`id=1 OR 1=1`，放行后直接返回数据库所有内容\n![图片](assets/uploads/202610/sql-7faa80d436.png)\n\n## 二、字符型注入\n### 2.1 概念\n字符型注入是指：SQL 语句中的参数处于字符串上下文，例如 name = '$name'，程序把用户输入拼接到引号内部，没有使用参数化查询（同前文的恒真注入的例子）\n\n### 2.2 判断方法\n假设URL如下\n```http\n?name=&submit=Submit\n```\n可以尝试改为\n```http\n?name=1‘&submit=Submit （或其他任何数字字母，只要用单引号闭合即可）\n```\n如果返回错误，则可能存在字符型注入\n\n### 2.3 关键点理解\n字符型注入的关键是：先闭合原有引号，再构造自己的SQL逻辑，最后用注释符处理掉剩余引号。\n```sql\nSELECT * FROM users WHERE name = '$name'\n```\n输入了\n```http\n' OR 1=1 -- -\n```\n被拼接到SQL中\n```sql\n```bash\nSELECT * FROM users WHERE name = '' OR 1=1 -- -'\n```\n其中三个要点：\n- 第一个 ' 闭合了 `name = '`变成了`name = ''`\n- OR 1=1 是注入逻辑，重点在“一真一假恒为真”的逻辑特点\n- -- - 注释掉后面的 '\n\n### 2.4 与数字型注入的核心区别\n```sql\n数字型     WHERE id = $id        不需要闭合引号  \t1 OR 1=1\n字符型\t WHERE name = '$name'\t 需要先闭合引号  \t' OR '1'='1\n```\n与数字型注入相比，字符型注入通常需要先闭合引号，再构造特定逻辑，最后注释掉剩余引号。\n\n### 2.5 常用的闭合方式与注释符\n\n闭合\n```Example\n单引号\t        name = '$name'        \t'\n双引号\t        name = \"$name\"          \"\n括号+单引号\tname = ('$name')\t')\n括号+双引号\tname = (\"$name\")\t\")\nLIKE 语句\tname LIKE '%$name%'\t%' 或 '\n```\n\n注释\n```Example\n-- （注意后面通常要加空格）\n#\n/* */\n```\n\n### 2.6 靶场实战\n先尝试闭合单引号看是否报错，在输入框直接输入`1‘`查看结果（GET请求也可直接在URL里拼），出现报错\n![图片](assets/uploads/202610/sql-ea84d01416.png)\n然后输入`1' OR '1+1=2`拼接SQL语句\n![图片](assets/uploads/202610/sql-a38cf05951.png)\n数据库内容全部回显，完成\n> 注意到了恒真条件可以自行安排，可更直观的表达\n\n## 三、搜索型注入\n### 3.1 什么是搜索型注入\n搜索型注入本质上是字符型注入的一种变体，通常出现在搜索功能中，程序使用LIKE语句进行模糊匹配\n\n正常请求\n```http\n?keyword=安全\n```\n生成SQL（正常）\n```sql\nSELECT * FROM articles WHERE title LIKE '%安全%'\n```\n攻击者可用\n```http\n?keyword=' OR 1=1 -- \n```\n生成SQL（恶意）\n```sql\nSELECT * FROM articles WHERE title LIKE '%' OR 1=1 -- %'\n```\n其中三个要点：\n- %' 闭合了原 SQL 中的 '%；\n- OR 1=1 使条件恒真；\n- -- 注释掉后面的 %'。\n\n结果可能返回表中所有文章。\n\n### 3.2 判断方法\n同上，单引号闭合看是否报错\n> 后续会补上每种类型的具体判断思路\n\n### 3.3 靶场实战\n![图片](assets/uploads/202610/sql-43b3e9e6f3.png)",
+"source":"notes/sql注入实战.md",
+"words":610,
+"reading_time":2,
+"updated":"2026-10-14",
+"draft":false
+},
+{
+"slug":"linux一基础命令",
+"title":"Linux基础（一）",
 "date":"2026-10-11",
 "category":"计算机基础",
 "tags":[
 "Linux"
 ],
-"summary":"Linux基础命令与使用 以下均为基于Kali Linux（Debian）所学的命令 一、有关情报收集最常用命令 1.1 curl/wget：HTTP 请求与下载 -I / -i 响应头、体 -I 只看响应头，-i 看响应头＋体，主要看Server、X-Pow…",
-"body":"# Linux基础命令与使用\n\n> 以下均为基于Kali Linux（Debian）所学的命令\n\n## 一、有关情报收集最常用命令\n### 1.1 curl/wget：HTTP 请求与下载\n\n#### -I / -i 响应头、体\n-I 只看响应头，-i 看响应头＋体，主要看Server、X-Powered-By、Set-Cookie、Location\n*此处顾名思义不放图片*\n#### -L 跟随重定向\n跟随重定向的地址继续发送请求，下图为有无-L命令的运行状态\n![图片](assets/uploads/202610/linux-5831828e24.png)\n显而易见，没有加-L的命令的响应体中只回显了301，加了-L的命令回显200，此为重定向\n#### -H：自定义请求头\n\n\n\n\n\n\n## 二、核心内容",
-"source":"notes/linux基础基础.md",
-"words":162,
-"reading_time":1,
-"updated":"2026-10-11",
+"summary":"【一、基础命令】涵盖了使用Linux各使用场景的常见高频命令",
+"body":"# Linux基础命令与使用\n\n> 以下均为基于Kali Linux（Debian）所学的命令\n\n\n## 一、帮助\n- `man ls`                  # 查看ls命令手册，ls可换成其他命令\n- `ls --help`               # 查看ls快速帮助，ls可换成其他命令\n- `which python3`           # 查看python3路径，python3可换成其他命令\n\n## 二、包管理\n- `sudo apt update && sudo apt full-upgrade -y`   # 更新源并完整升级，无变量\n- `sudo apt install nmap`                          # 安装nmap，nmap可换成包名\n- `sudo apt remove --purge apache2`                # 卸载apache2并删配置，apache2可换成包名\n- `apt search wireshark`                           # 搜索wireshark，wireshark可换成\n\n## 三、目录文件\n- `pwd`                     # 显示当前目录\n- `ls -alh 或 ls -la`                 # 列出所有文件详细信息\n- `cd /etc`                 # 进入/etc，/etc可换成目标目录\n- `mv old.txt new.txt`      # 重命名，old.txt和new.txt可换成源和目标\n- `rm -rf /tmp/test`        # 强制删除/tmp/test，/tmp/test可换成目标目录，慎用\n- `touch xxx.txt`           # 创建xxx.txt，可换成文件名\n- `file /bin/ls`            # 查看/bin/ls类型，/bin/ls可换成文件\n\n## 四、文本查看处理\n- `cat /etc/passwd`                 # 查看/etc/passwd，/etc/passwd可换成文件\n\n## 五、查找\n- `sudo updatedb && locate sshd_config` # 更新库并查找sshd_config，sshd_config可换\n- `which nmap`                          # 查看nmap路径，nmap可换\n\n## 六、权限与用户\n- `sudo su`                             # 切换到root\n- `whoami`                              # 显示当前用户名\n- `id`                                  # 显示用户和组ID\n- `passwd`                              # 修改当前用户密码\n\n## 七、进程系统磁盘\n- `ps aux | grep ssh`       # 查看ssh进程，ssh可换\n- `top`                     # 动态查看进程\n- `htop`                    # 交互式进程查看\n- `kill -9 1234`            # 强制结束PID1234，1234可换\n- `pkill -f nginx`          # 按关键词结束nginx，nginx可换\n- `free -h`                 # 查看内存\n- `df -h`                   # 查看磁盘空间\n- `du -sh /home`         # 查看/home大小，/home可换\n\n## 八、网络\n- `ip a`                    # 查看IP地址\n- `ping -c 4 8.8.8.8`       # ping8.8.8.8可换其他地址/网址\n- `curl -I http://example.com`      # 查看响应头，URL可换\n- `wget http://example.com/file.zip` # 下载文件，URL可换\n- `ssh kali@192.168.1.10`           # 登录远程，kali和IP可换\n\n## 九、压缩\n- `tar -czvf xxx.tar.gz /home/kali/Documents`  # 压缩目录，文件名和目录可换\n- `tar -xzvf xxx.tar.gz`                       # 解压，文件名可换\n- `zip -r xxx.zip /var/www/html`                 # 创建zip，文件名和目录可换\n- `unzip xxx.zip`                                # 解压zip，文件名可换\n\n## 十、快捷键\n- `Ctrl+Alt+T`                      # 呼出终端\n- `Ctrl+C`                          # 终止当前命令\n- `Ctrl+L`                          # 清屏\n- `Ctrl+R`                          # 搜索历史命令\n- `Tab`                             # 自动补全\n\n\n## 十一、常用目录\n- `/etc`                    # 系统和软件配置目录\n- `/var/log`                # 系统日志目录\n- `/home`                   # 普通用户家目录\n- `/root`                   # root家目录\n- `/usr/share/wordlists`    # Kali常用字典目录\n\n## 十二、常用渗透测试工具\n- `nmap -sV -sC 192.168.1.10`       # 扫描目标，IP可换\n- `msfconsole`                      # 启动Metasploit\n- `searchsploit apache 2.4`         # 搜索漏洞，apache2.4可换\n- `sqlmap -u \"http://192.168.1.10/?id=1\"`  # 检测SQL注入，URL可换\n- `burpsuite`                       # Web渗透代理",
+"source":"notes/linux一基础命令.md",
+"words":696,
+"reading_time":2,
+"updated":"2026-10-14",
 "draft":false
 },
 {
@@ -96,7 +201,7 @@ window.SEC_BLOG = {
 "source":"notes/数据库基础.md",
 "words":169,
 "reading_time":1,
-"updated":"2026-10-11",
+"updated":"2026-10-14",
 "draft":false
 },
 {
@@ -113,7 +218,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入原理.md",
 "words":672,
 "reading_time":2,
-"updated":"2026-10-11",
+"updated":"2026-10-14",
 "draft":false
 },
 {
@@ -129,7 +234,7 @@ window.SEC_BLOG = {
 "source":"notes/http协议.md",
 "words":1780,
 "reading_time":5,
-"updated":"2026-10-11",
+"updated":"2026-10-14",
 "draft":false
 },
 {
@@ -142,11 +247,11 @@ window.SEC_BLOG = {
 "端口"
 ],
 "summary":"IP地址与端口的基本概念",
-"body":"## 一、IP地址\n精准定位、网络身份证，分为内网和公网两种\n\n### 1.如何判断？\nWindows系统ipconfig，Linux系统ifconfig（至少Kali是这样的）看IPv4地址\n\n#### 内网/私网：\n\n号段：10.x.x.x、172.16.x.x–172.31.x.x、192.168.x.x\n\n- 单向保护性：公网不可随意访问内网，但反过来可以\n\n- 安全屏障：隐藏在路由器后面，阻挡外部探测\n\n（*说到这里，我查了校园网属于内网，难道用校园网上Kali好像有点问题 就是这样导致的吗？*）\n\n这些也不是公网：127.x.x.x、169.254.x.x、100.64.x.x–100.127.x.x\n\n#### 公网：除上述之外的 IPv4 地址\n- 全球唯一性：全世界都可以访问，可以看到\n- 暴露风险性：只要联网，就可以被扫描\n- 双向直连：可直接访问监控、NAS、服务器等\n\n（*公网是小区大门，内网IP是家里门牌，可以从内网走到公网，但公网想访问内网，需要通过路由器认证*）\n\n## 二、端口\n#### 1.什么是端口？\n- 唯一标识：一台计算机只有一张网卡(一个IP )，但能同时运行网页、QQ、游戏等多个程序，端口就是用来区分它们的。 \n- 数字化通信的出入口：英文简称为Port(原意为港口/大门)。它是数据在虚拟网络中进出系统的逻辑必经通道。 \n- 虚拟端口的不可见性：区别于插网线的物理接口，网安中研究的绝大多数是操作系统内部的虚拟端口，范围从0到65535。\n\n（*IP地址如同一个大范围总地址（如定位到福师大）；端口号则是房间号（80找教学楼、443找宿舍等*））\n\n#### 2.端口范围：\n\n（一个端口不可以被两个服务同时占用）\n\n0~1023 为周知端口（一般被标准服务占用）\n\n1024-65535为动态高位端口（留给本地软件临时使用）\n> 渗透常见端口：80/443、22、3389、445\n\n- 80/443 HTTP/HTTPS 网站Web服务\n\n- 22 SSH远程管理 Linux后门爆破常客\n\n- 3389 RDP远程桌面 Windows远控主战场\n\n- 445 SMB服务 永恒之蓝漏洞爆发点\n\n#### 源端口Source：随机开启\n\n#### 目的端口Dest：服务器端固定开启并监听\n\n![图片](assets/uploads/202609/__new__-94bed26d66.jpg)",
+"body":"## 一、IP地址\n精准定位、网络身份证，分为内网和公网两种\n\n如何查自己的IP？\nWindows系统ipconfig，Linux系统ifconfig（看IPv4地址\n\n## 一、内网/公网\n号段：10.x.x.x、172.16.x.x–172.31.x.x、192.168.x.x\n\n- 单向保护性：公网不可随意访问内网，但反过来可以\n\n- 安全屏障：隐藏在路由器后面，阻挡外部探测\n\n（*说到这里，我查了校园网属于内网，难道用校园网上Kali好像有点问题 就是这样导致的吗？*）\n\n这些也不是公网：127.x.x.x、169.254.x.x、100.64.x.x–100.127.x.x\n\n#### 公网：除上述之外的 IPv4 地址\n- 全球唯一性：全世界都可以访问，可以看到\n- 暴露风险性：只要联网，就可以被扫描\n- 双向直连：可直接访问监控、NAS、服务器等\n\n（*公网是小区大门，内网IP是家里门牌，可以从内网走到公网，但公网想访问内网，需要通过路由器认证*）\n\n## 二、端口\n#### 1.什么是端口？\n- 唯一标识：一台计算机只有一张网卡(一个IP )，但能同时运行网页、QQ、游戏等多个程序，端口就是用来区分它们的。 \n- 数字化通信的出入口：英文简称为Port(原意为港口/大门)。它是数据在虚拟网络中进出系统的逻辑必经通道。 \n- 虚拟端口的不可见性：区别于插网线的物理接口，网安中研究的绝大多数是操作系统内部的虚拟端口，范围从0到65535。\n\n（*IP地址如同一个大范围总地址（如定位到福师大）；端口号则是房间号（80找教学楼、443找宿舍等*））\n\n#### 2.端口范围：\n\n（一个端口不可以被两个服务同时占用）\n\n0~1023 为周知端口（一般被标准服务占用）\n\n1024-65535为动态高位端口（留给本地软件临时使用）\n> 渗透常见端口：80/443、22、3389、445\n\n- 80/443 HTTP/HTTPS 网站Web服务\n\n- 22 SSH远程管理 Linux后门爆破\n\n- 3389 RDP远程桌面 Windows远控\n\n- 445 SMB服务 永恒之蓝漏洞爆发点\n\n#### 源端口Source：随机开启\n\n#### 目的端口Dest：服务器端固定开启并监听\n\n![图片](assets/uploads/202609/__new__-94bed26d66.jpg)",
 "source":"notes/ip地址与端口.md",
-"words":587,
+"words":578,
 "reading_time":2,
-"updated":"2026-10-11",
+"updated":"2026-10-14",
 "draft":false
 },
 {
@@ -156,16 +261,20 @@ window.SEC_BLOG = {
 "category":"杂谈",
 "tags":[],
 "summary":"网站成立日杂谈",
-"body":"# Day0：26.9.13\n\n> 网站成立纪念日\n\n## 一、计划表？\n这个表从moectf入门指北拿来的（真的靠谱吗）\n\n不管了，先学点基础吧\n![图片](assets/uploads/202609/c4ebde930e.png)\n\n就按着这个来吧\n\n## 二、终于有了自己的网站了\n没钱部署到服务器只能搞穿透了（访问速度稍慢请见谅 我尽量少放点图片）",
+"body":"# Day0：26.9.13\n\n> 网站成立纪念日\n\n## 一、计划表\n\n\n不管了，先学点基础吧\n![图片](assets/uploads/202609/c4ebde930e.png)\n\n就按着这个来吧\n\n## 二、终于有了自己的网站了\n没钱部署到服务器只能搞穿透了（访问速度稍慢请见谅 我尽量少放点图片）",
 "source":"notes/这是神的开始吗.md",
-"words":90,
+"words":73,
 "reading_time":1,
-"updated":"2026-10-11",
+"updated":"2026-10-14",
 "draft":false
 }
 ],
 "links":{
-"linux基础基础":[],
+"sql注入二":[],
+"立项常见情报收集工具kali":[],
+"立项burp-suite使用基础":[],
+"sql注入实战":[],
+"linux一基础命令":[],
 "数据库基础":[],
 "sql注入原理":[],
 "http协议":[],
@@ -173,7 +282,11 @@ window.SEC_BLOG = {
 "这是神的开始吗":[]
 },
 "backlinks":{
-"linux基础基础":[],
+"sql注入二":[],
+"立项常见情报收集工具kali":[],
+"立项burp-suite使用基础":[],
+"sql注入实战":[],
+"linux一基础命令":[],
 "数据库基础":[],
 "sql注入原理":[],
 "http协议":[],
@@ -181,7 +294,11 @@ window.SEC_BLOG = {
 "这是神的开始吗":[]
 },
 "broken":{
-"linux基础基础":[],
+"sql注入二":[],
+"立项常见情报收集工具kali":[],
+"立项burp-suite使用基础":[],
+"sql注入实战":[],
+"linux一基础命令":[],
 "数据库基础":[],
 "sql注入原理":[],
 "http协议":[],
