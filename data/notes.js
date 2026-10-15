@@ -12,11 +12,11 @@ window.SEC_BLOG = {
 "siteUrl":"https://deus-088.github.io/secnotes/"
 },
 "stats":{
-"notes":10,
-"categories":5,
-"tags":15,
-"words":5129,
-"builtAt":"2026-10-15 13:22"
+"notes":11,
+"categories":6,
+"tags":16,
+"words":5582,
+"builtAt":"2026-10-15 23:26"
 },
 "categories":[
 [
@@ -33,6 +33,10 @@ window.SEC_BLOG = {
 ],
 [
 "杂谈",
+1
+],
+[
+"漏洞报告",
 1
 ],
 [
@@ -98,11 +102,31 @@ window.SEC_BLOG = {
 1
 ],
 [
+"漏洞报告",
+1
+],
+[
 "端口",
 1
 ]
 ],
 "notes":[
+{
+"slug":"独立发现广东佛山一公司存在弱口令及用户枚举",
+"title":"独立发现：广东佛山一公司存在弱口令及用户枚举",
+"date":"2026-10-15",
+"category":"漏洞报告",
+"tags":[
+"漏洞报告"
+],
+"summary":"佛山市云诺科技有限公司存在弱口令与任意用户枚举",
+"body":"# 佛山市云诺科技公司云名片后台管理系统\n# 存在弱口令与用户枚举\n\n> 作者说：独立发现的一个小漏洞，还是有点小激动的。起因是学习BP时，B站某位老师教我随便找网站，一开始只是随便试试，没想到居然成功了。也算是BP基础过关了（所以那一篇就不写了，以这篇为例子）\n\n> 已经联系到了公司负责人处理该问题\n\n## 一、基本信息\n- 漏洞类型：弱口令、POST型\n- 弱口令账号：admin，密码：test123\n- 漏洞URL：修复前暂不公布\n\n## 二、任意用户枚举\n登录时分别尝试账号admin1和admin，发现其返回的提示不一致\n![图片](assets/uploads/202610/__new__-8e4ce2a609.png)\n又多试了几个账户，回显均同右图，可以确定存在用户枚举，且admin就是实际存在的用户\n\n\n## 三、弱口令\n### 3.1 拦截请求包\n使用BP拦截请求包，请求类型为POST型，初始请求体为：\n```http\nusername=admin&password=12345\n```\n### 3.2 添加payload\n为密码位置添加 payload，添加上我用AI自研的大密码字典\n![图片](assets/uploads/202610/d1b4baa70e.png)\n\n### 3.3 发起攻击\n- 1) 发起攻击，静待3分钟。\n- 2) 期间筛选请求响应状态为200，并按长度降序排序，**观察长度变化**\n- 3) 大概1分钟以后，第6009次请求长度出现变化（如下图左边），与其它请求不一致，暂停攻击，尝试密码\n- 4) 账号密码输入，提示登录成功，进入公司后台\n![图片](assets/uploads/202610/63eb9a5e8a.jpg)\n\n## 四、漏洞危害\n如上图右边，涵盖：\n- 管理员权限管理（删除管理员）\n- 公司信息（图中界面）\n- 会员管理（其中含62家公司名片管理后台账户密码，影响很大）\n- 留言板（3个工程师的电话）",
+"source":"notes/独立发现广东佛山一公司存在弱口令及用户枚举.md",
+"words":453,
+"reading_time":2,
+"updated":"2026-10-15",
+"draft":false
+},
 {
 "slug":"sql注入二",
 "title":"SQL注入（二）联合注入",
@@ -117,7 +141,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入二.md",
 "words":503,
 "reading_time":2,
-"updated":"2026-10-14",
+"updated":"2026-10-15",
 "draft":false
 },
 {
@@ -136,7 +160,7 @@ window.SEC_BLOG = {
 "source":"notes/立项常见情报收集工具kali.md",
 "words":30,
 "reading_time":1,
-"updated":"2026-10-14",
+"updated":"2026-10-15",
 "draft":false
 },
 {
@@ -152,7 +176,7 @@ window.SEC_BLOG = {
 "source":"notes/立项burp-suite使用基础.md",
 "words":18,
 "reading_time":1,
-"updated":"2026-10-14",
+"updated":"2026-10-15",
 "draft":false
 },
 {
@@ -169,7 +193,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入实战.md",
 "words":610,
 "reading_time":2,
-"updated":"2026-10-14",
+"updated":"2026-10-15",
 "draft":false
 },
 {
@@ -185,7 +209,7 @@ window.SEC_BLOG = {
 "source":"notes/linux一基础命令.md",
 "words":696,
 "reading_time":2,
-"updated":"2026-10-14",
+"updated":"2026-10-15",
 "draft":false
 },
 {
@@ -201,7 +225,7 @@ window.SEC_BLOG = {
 "source":"notes/数据库基础.md",
 "words":169,
 "reading_time":1,
-"updated":"2026-10-14",
+"updated":"2026-10-15",
 "draft":false
 },
 {
@@ -218,7 +242,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入原理.md",
 "words":672,
 "reading_time":2,
-"updated":"2026-10-14",
+"updated":"2026-10-15",
 "draft":false
 },
 {
@@ -234,7 +258,7 @@ window.SEC_BLOG = {
 "source":"notes/http协议.md",
 "words":1780,
 "reading_time":5,
-"updated":"2026-10-14",
+"updated":"2026-10-15",
 "draft":false
 },
 {
@@ -251,7 +275,7 @@ window.SEC_BLOG = {
 "source":"notes/ip地址与端口.md",
 "words":578,
 "reading_time":2,
-"updated":"2026-10-14",
+"updated":"2026-10-15",
 "draft":false
 },
 {
@@ -265,11 +289,12 @@ window.SEC_BLOG = {
 "source":"notes/这是神的开始吗.md",
 "words":73,
 "reading_time":1,
-"updated":"2026-10-14",
+"updated":"2026-10-15",
 "draft":false
 }
 ],
 "links":{
+"独立发现广东佛山一公司存在弱口令及用户枚举":[],
 "sql注入二":[],
 "立项常见情报收集工具kali":[],
 "立项burp-suite使用基础":[],
@@ -282,6 +307,7 @@ window.SEC_BLOG = {
 "这是神的开始吗":[]
 },
 "backlinks":{
+"独立发现广东佛山一公司存在弱口令及用户枚举":[],
 "sql注入二":[],
 "立项常见情报收集工具kali":[],
 "立项burp-suite使用基础":[],
@@ -294,6 +320,7 @@ window.SEC_BLOG = {
 "这是神的开始吗":[]
 },
 "broken":{
+"独立发现广东佛山一公司存在弱口令及用户枚举":[],
 "sql注入二":[],
 "立项常见情报收集工具kali":[],
 "立项burp-suite使用基础":[],
