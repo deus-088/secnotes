@@ -49,8 +49,8 @@
         '<button type="button" class="fb-tab" id="fbTabGithub" data-tab="github">方式二 · GitHub</button>' +
       '</div>' +
       '<div class="fb-recip" id="fbRecip">' +
-        '<div class="fb-recip-label">接收邮箱（Recipients）—— 请复制对应邮箱，用你自己的邮件客户端发送</div>' +
-        '<div class="fb-recip-item"><b>主用</b><br /><span class="fb-mail">deus8800@126.com</span></div>' +
+        '<div class="fb-recip-label">接收邮箱（Recipients）—— 优先使用主用邮箱，备用邮箱仅在主用不可达时使用</div>' +
+        '<div class="fb-recip-item is-primary"><b>主用</b><br /><span class="fb-mail">deus8800@163.com</span></div>' +
         '<div class="fb-recip-item"><b>备用</b><br /><span class="fb-mail">deus880088@gmail.com</span></div>' +
         '<div class="fb-recip-item fb-gh"><b>我的 GitHub 主页（My GitHub Profile）</b><br />' +
           '<a class="fb-mail" href="https://github.com/deus-088" target="_blank" rel="noopener">https://github.com/deus-088</a></div>' +

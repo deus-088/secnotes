@@ -113,6 +113,10 @@
   background: var(--panel);
 }
 .fb-recip-item:last-of-type { margin-bottom: 0; }
+
+/* 主用优先：卡片描边用强调色，备用保持中性 */
+.fb-recip-item.is-primary { border-color: var(--accent-line); }
+.fb-recip-item.is-primary b { color: var(--accent); }
 .fb-recip-item b {
   display: block;
   margin-bottom: 4px;
