@@ -45,6 +45,13 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
+  /* 动态加载的脚本沿用 app.js 自己的版本号，改版本只需改 index.html */
+  var ASSET_V = (function () {
+    var cur = document.currentScript;
+    var m = cur && cur.src ? cur.src.match(/\?v=[\w.-]+/) : null;
+    return m ? m[0] : '';
+  })();
+
   /* ------------------------------------------------------------
      工具函数
      ------------------------------------------------------------ */
@@ -94,6 +101,72 @@
   function pageSize() {
     var n = parseInt(CONFIG.pageSize, 10);
     return (isNaN(n) || n < 1) ? 8 : n;
+  }
+
+  /* ------------------------------------------------------------
+     Markdown 渲染器按需加载
+     marked + highlight + render 合计约 177KB，只有文章页用得到。
+     首页 / 归档 / 标签只在首次进入文章时才下载，省掉首屏这块开销。
+     ------------------------------------------------------------ */
+  var vendor = { state: 0, queue: [], hlLoading: false };   // 0 未开始 / 1 加载中 / 2 就绪 / -1 失败
+
+  function loadVendor(done) {
+    if (window.SecRender) { vendor.state = 2; done(); return; }
+    if (vendor.state === 2 || vendor.state === -1) { done(); return; }
+
+    vendor.queue.push(done);
+    if (vendor.state === 1) return;
+    vendor.state = 1;
+
+    /* 只等「能渲染」的两件：marked 与 render.js。
+       highlight 体积最大（120KB），放到首屏之后单独解析。 */
+    var files = [
+      'assets/vendor/marked.min.js',
+      'assets/js/render.js'
+    ];
+    var i = 0;
+
+    (function next() {
+      if (i >= files.length) {
+        if (window.SecRender && SecRender.setNoteIndex) SecRender.setNoteIndex(NOTES);
+        vendor.state = window.SecRender ? 2 : -1;
+        var q = vendor.queue.slice();
+        vendor.queue.length = 0;
+        for (var k = 0; k < q.length; k++) q[k]();
+        loadHighlight();
+        return;
+      }
+      var s = document.createElement('script');
+      s.src = files[i++] + ASSET_V;
+      s.onload = next;
+      s.onerror = next;      // 任一失败继续走完，最终由 render 的降级分支兜底
+      document.head.appendChild(s);
+    })();
+  }
+
+  /* 语法高亮延后加载：代码块先以纯文本呈现，highlight 到位后再就地着色 */
+  function loadHighlight() {
+    if (window.hljs || vendor.hlLoading) return;
+    vendor.hlLoading = true;
+    var s = document.createElement('script');
+    s.src = 'assets/vendor/highlight.min.js' + ASSET_V;
+    s.onload = function () { vendor.hlLoading = false; applyHighlight(); };
+    s.onerror = function () { vendor.hlLoading = false; };
+    document.head.appendChild(s);
+  }
+
+  function applyHighlight() {
+    if (!window.hljs || !hljs.highlightElement) return;
+    var blocks = document.querySelectorAll('#postBody .code-block pre code');
+    for (var i = 0; i < blocks.length; i++) {
+      var el = blocks[i];
+      if (el.dataset && el.dataset.highlighted === 'yes') continue;
+      var m = (el.className || '').match(/language-([\w+#.-]+)/i);
+      if (!m) continue;
+      var lang = m[1].toLowerCase();
+      if (!hljs.getLanguage(lang)) continue;
+      try { hljs.highlightElement(el); } catch (e) { /* 单个块失败不影响其他 */ }
+    }
   }
 
   function findNote(slug) {
@@ -533,6 +606,13 @@
     var app = $('#app');
     if (!app) return;
 
+    /* 文章页依赖渲染器：未就绪时先排队，加载完成后重跑本函数；
+       失败（state = -1）则继续往下走，由 viewPost 的 <pre> 分支兜底。 */
+    if (route.name === 'note' && !window.SecRender && vendor.state !== -1) {
+      loadVendor(render);
+      return;
+    }
+
     if (state.observer) { state.observer.disconnect(); state.observer = null; }
 
     var note = route.name === 'note' ? findNote(route.slug) : null;
@@ -551,6 +631,14 @@
         var headings = window.SecRender
           ? SecRender.render(note.body, body)
           : (body.innerHTML = '<pre>' + esc(note.body) + '</pre>', []);
+
+        /* 正文图片默认懒加载：滚动到附近才解码，长文首屏更快 */
+        var imgs = body.querySelectorAll('img');
+        for (var k = 0; k < imgs.length; k++) {
+          if (!imgs[k].hasAttribute('loading')) imgs[k].loading = 'lazy';
+          if (!imgs[k].hasAttribute('decoding')) imgs[k].decoding = 'async';
+        }
+        applyHighlight();
         var toc = $('#toc');
         if (toc) { buildToc(headings, toc); spyToc(headings); }
       }
@@ -560,7 +648,11 @@
     }
 
     syncActive(route);
+    measureProgress();
     syncProgress();
+
+    /* 皮肤层：路由切换后重排滑动指示块、播放入场编排 */
+    if (window.LiquidUI && LiquidUI.afterRender) LiquidUI.afterRender();
   }
 
   function syncActive(route) {
@@ -579,19 +671,41 @@
     });
   }
 
-  function syncProgress() {
+  /* 滚动进度条：滚动事件只做「登记」，真正的读取与写入合并到一帧一次。
+     每帧调用 scrollHeight 会强制同步布局，高频滚动时是主要的卡顿来源。 */
+  var progressFrame = 0;
+  var progressMax = 0;
+  var progressLastP = -1;
+
+  function measureProgress() {
+    var h = document.documentElement;
+    progressMax = Math.max(0, h.scrollHeight - h.clientHeight);
+  }
+
+  function paintProgress() {
+    progressFrame = 0;
     var bar = $('#progressBar');
     var top = $('#toTop');
     if (!bar) return;
-    var route = parseRoute();
-    var h = document.documentElement;
-    var max = h.scrollHeight - h.clientHeight;
+
+    var y = window.pageYOffset;
     var pct = 0;
-    if (route.name === 'note' && max > 40) {
-      pct = Math.min(100, Math.max(0, (h.scrollTop / max) * 100));
+    if (location.hash.indexOf('#/note/') === 0 && progressMax > 40) {
+      pct = Math.min(100, Math.max(0, (y / progressMax) * 100));
     }
-    bar.style.width = pct + '%';
-    if (top) top.hidden = h.scrollTop < 420;
+    if (pct !== progressLastP) {
+      progressLastP = pct;
+      bar.style.setProperty('--p', (pct / 100).toFixed(4));
+    }
+    if (top) {
+      var hide = y < 420;
+      if (top.hidden !== hide) top.hidden = hide;
+    }
+  }
+
+  function syncProgress() {
+    if (progressFrame) return;
+    progressFrame = requestAnimationFrame(paintProgress);
   }
 
   /* ------------------------------------------------------------
@@ -632,14 +746,23 @@
   /* ------------------------------------------------------------
      主题
      ------------------------------------------------------------ */
-  function applyTheme(theme) {
-    state.theme = theme;
-    document.documentElement.setAttribute('data-theme', theme);
-    var dark = $('#hljs-theme-dark');
-    var light = $('#hljs-theme-light');
-    if (dark) dark.disabled = theme !== 'dark';
-    if (light) light.disabled = theme !== 'light';
-    store.set('sec-theme', theme);
+  function applyTheme(theme, instant) {
+    var commit = function () {
+      state.theme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      var dark = $('#hljs-theme-dark');
+      var light = $('#hljs-theme-light');
+      if (dark) dark.disabled = theme !== 'dark';
+      if (light) light.disabled = theme !== 'light';
+      store.set('sec-theme', theme);
+    };
+    /* 有皮肤层时用圆形扩散过渡；首屏应用已存主题时必须「瞬时」，
+       否则页面一打开就先播放一次切换动画。 */
+    if (!instant && window.LiquidUI && LiquidUI.themeSwap) {
+      LiquidUI.themeSwap(commit, $('#themeToggle'));
+    } else {
+      commit();
+    }
   }
 
   /* ------------------------------------------------------------
@@ -713,7 +836,7 @@
      启动
      ------------------------------------------------------------ */
   function boot() {
-    applyTheme(state.theme);
+    applyTheme(state.theme, true);
     buildSidebar();
     bindSearch();
     bindNav();
@@ -755,7 +878,10 @@
     if (toTop) toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
     window.addEventListener('scroll', syncProgress, { passive: true });
-    window.addEventListener('resize', syncProgress, { passive: true });
+    window.addEventListener('resize', function () {
+      measureProgress();
+      syncProgress();
+    }, { passive: true });
 
     window.addEventListener('hashchange', function () {
       var r = parseRoute();
@@ -807,9 +933,16 @@
        于是「管理端删了、展示端没反应」。
        <script> 标签不受同源策略限制，所以改用 JSONP 去服务端取版本戳：
        只要 data/notes.js 被重建过，版本就会变，展示端随即重载。
-       服务不可达时静默跳过，不影响纯静态阅读。 */
+       服务不可达时静默跳过，不影响纯静态阅读。
+
+       注意：这条通道只对「本机预览」有意义。GitHub Pages 上并不存在
+       127.0.0.1:8080 的 admin.py，若继续轮询，控制台会每 3 秒刷一次
+       ERR_CONNECTION_REFUSED —— 所以先用 IS_LOCAL 收敛运行环境。 */
+    var IS_LOCAL = location.protocol === 'file:' ||
+      /^(localhost|127\.0\.0\.1|\[::1\]|0\.0\.0\.0)$/.test(location.hostname);
     var SYNC_PORTS = [8080, 8081, 9000];
     var verBase = null, lastVer = null, verBusy = false;
+    var missStreak = 0, nextTryAt = 0;
 
     function loadVersion(cb) {
       var s = document.createElement('script');
@@ -820,37 +953,49 @@
       document.head.appendChild(s);
     }
     function probePort(i) {
-      if (i >= SYNC_PORTS.length) { verBusy = false; verBase = null; return; }
+      if (i >= SYNC_PORTS.length) {
+        verBusy = false;
+        verBase = null;
+        /* 全部端口都不可达：指数退避，避免本机静态预览时每 3 秒刷一屏 ERR_CONNECTION_REFUSED */
+        missStreak++;
+        nextTryAt = Date.now() + Math.min(60000, POLL_MS * Math.pow(2, missStreak));
+        return;
+      }
       verBase = 'http://127.0.0.1:' + SYNC_PORTS[i] + '/';
       loadVersion(function (ok) {
         if (ok && window.SEC_SITE_VERSION) {
           lastVer = window.SEC_SITE_VERSION;
           verBusy = false;
+          missStreak = 0;
+          nextTryAt = 0;
         } else {
           probePort(i + 1);
         }
       });
     }
-    try {
-      setInterval(function () {
-        if (document.hidden) return;
-        if (verBusy) return;
-        verBusy = true;
-        if (!verBase) { probePort(0); return; }      // 首次/服务重启后重新探测端口
-        loadVersion(function (ok) {
-          verBusy = false;
-          if (!ok) { verBase = null; return; }       // 服务关了，下次重新探测
-          var v = window.SEC_SITE_VERSION;
-          if (!v) return;
-          if (lastVer && v !== lastVer) {
-            lastVer = v;
-            window.location.reload();
-          } else {
-            lastVer = v;
-          }
-        });
-      }, POLL_MS);
-    } catch (err) { /* 环境不支持时忽略 */ }
+    if (IS_LOCAL) {
+      try {
+        setInterval(function () {
+          if (document.hidden) return;
+          if (verBusy) return;
+          if (Date.now() < nextTryAt) return;
+          verBusy = true;
+          if (!verBase) { probePort(0); return; }      // 首次/服务重启后重新探测端口
+          loadVersion(function (ok) {
+            verBusy = false;
+            if (!ok) { verBase = null; return; }       // 服务关了，下次重新探测
+            var v = window.SEC_SITE_VERSION;
+            if (!v) return;
+            if (lastVer && v !== lastVer) {
+              lastVer = v;
+              window.location.reload();
+            } else {
+              lastVer = v;
+            }
+          });
+        }, POLL_MS);
+      } catch (err) { /* 环境不支持时忽略 */ }
+    }
 
     document.addEventListener('click', function (e) {
       var t = e.target;
@@ -871,6 +1016,85 @@
   } else {
     boot();
   }
+})();
+
+/* ===== 移动端文章目录（发布层注入）===== */
+(function () {
+  var btn = document.getElementById('tocBtn');
+  var drawer = document.getElementById('tocDrawer');
+  var closeBtn = document.getElementById('tocClose');
+  var body = document.body;
+  var app = document.getElementById('app');
+  if (!btn || !drawer || !closeBtn || !app) return;
+
+  function isNoteRoute() { return location.hash.indexOf('#/note/') === 0; }
+  function openToc() { body.classList.add('toc-open'); drawer.setAttribute('aria-hidden', 'false'); }
+  function closeToc() { body.classList.remove('toc-open'); drawer.setAttribute('aria-hidden', 'true'); }
+
+  function fillToc() {
+    var nav = document.getElementById('tocMobile');
+    btn.hidden = !isNoteRoute();
+    if (!isNoteRoute()) {
+      if (body.classList.contains('toc-open')) closeToc();
+      if (nav) nav.innerHTML = '';
+      return;
+    }
+    if (!nav) return;
+    var hs = document.querySelectorAll('#postBody h1,h2,h3,h4');
+    var items = [];
+    hs.forEach(function (h) {
+      if (h.id) items.push({ level: parseInt(h.tagName.slice(1), 10), id: h.id, text: h.textContent });
+    });
+    if (items.length < 2) { nav.innerHTML = ''; return; }
+    nav.innerHTML = '<h5>目录</h5><ul>' + items.map(function (h) {
+      return '<li class="lvl-' + h.level + '"><a href="#' + encodeURIComponent(h.id) +
+        '" data-toc="' + h.id + '">' + h.text.replace(/</g, '&lt;') + '</a></li>';
+    }).join('') + '</ul>';
+    tocLinks = Array.prototype.slice.call(nav.querySelectorAll('a[data-toc]'));
+    tocLinks.forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        closeToc();
+        var el = document.getElementById(a.getAttribute('data-toc'));
+        if (el) {
+          var top = el.getBoundingClientRect().top + window.pageYOffset - 76;
+          window.scrollTo({ top: top, behavior: 'smooth' });
+        }
+      });
+    });
+    syncActive();
+  }
+
+  var tocLinks = [];
+  var tocFrame = 0;
+
+  function syncActive() {
+    tocFrame = 0;
+    if (!tocLinks.length) return;
+    var pos = window.pageYOffset + 110;
+    var cur = null;
+    tocLinks.forEach(function (a) {
+      var el = document.getElementById(a.getAttribute('data-toc'));
+      if (el && el.offsetTop <= pos) cur = a;
+    });
+    tocLinks.forEach(function (a) { a.classList.toggle('active', a === cur); });
+  }
+
+  function scheduleToc() {
+    if (tocFrame) return;
+    tocFrame = requestAnimationFrame(syncActive);
+  }
+
+  btn.addEventListener('click', function () {
+    body.classList.contains('toc-open') ? closeToc() : openToc();
+  });
+  closeBtn.addEventListener('click', closeToc);
+  var backdrop = document.getElementById('backdrop');
+  if (backdrop) backdrop.addEventListener('click', closeToc);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeToc(); });
+  window.addEventListener('scroll', scheduleToc, { passive: true });
+  new MutationObserver(function () { fillToc(); }).observe(app, { childList: true, subtree: true });
+  fillToc();
 })();
 
 /* ===== 移动端文章目录（发布层注入）===== */

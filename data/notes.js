@@ -14,9 +14,9 @@ window.SEC_BLOG = {
 "stats":{
 "notes":11,
 "categories":6,
-"tags":16,
-"words":5582,
-"builtAt":"2026-10-15 23:26"
+"tags":14,
+"words":6716,
+"builtAt":"2026-10-17 23:03"
 },
 "categories":[
 [
@@ -28,11 +28,11 @@ window.SEC_BLOG = {
 3
 ],
 [
-"工具基础",
+"杂谈",
 2
 ],
 [
-"杂谈",
+"工具基础",
 1
 ],
 [
@@ -48,10 +48,6 @@ window.SEC_BLOG = {
 [
 "sql",
 2
-],
-[
-"BP",
-1
 ],
 [
 "HtTP",
@@ -94,10 +90,6 @@ window.SEC_BLOG = {
 1
 ],
 [
-"参数位置",
-1
-],
-[
 "数据库",
 1
 ],
@@ -113,18 +105,18 @@ window.SEC_BLOG = {
 "notes":[
 {
 "slug":"独立发现广东佛山一公司存在弱口令及用户枚举",
-"title":"独立发现：广东佛山一公司存在弱口令及用户枚举",
+"title":"独立发现：某公司某业务后台存在弱口令及用户枚举",
 "date":"2026-10-15",
 "category":"漏洞报告",
 "tags":[
 "漏洞报告"
 ],
-"summary":"佛山市云诺科技有限公司存在弱口令与任意用户枚举",
+"summary":"佛山市云诺科技有限公司云名片业务管理后台存在弱口令与任意用户枚举",
 "body":"# 佛山市云诺科技公司云名片后台管理系统\n# 存在弱口令与用户枚举\n\n> 作者说：独立发现的一个小漏洞，还是有点小激动的。起因是学习BP时，B站某位老师教我随便找网站，一开始只是随便试试，没想到居然成功了。也算是BP基础过关了（所以那一篇就不写了，以这篇为例子）\n\n> 已经联系到了公司负责人处理该问题\n\n## 一、基本信息\n- 漏洞类型：弱口令、POST型\n- 弱口令账号：admin，密码：test123\n- 漏洞URL：修复前暂不公布\n\n## 二、任意用户枚举\n登录时分别尝试账号admin1和admin，发现其返回的提示不一致\n![图片](assets/uploads/202610/__new__-8e4ce2a609.png)\n又多试了几个账户，回显均同右图，可以确定存在用户枚举，且admin就是实际存在的用户\n\n\n## 三、弱口令\n### 3.1 拦截请求包\n使用BP拦截请求包，请求类型为POST型，初始请求体为：\n```http\nusername=admin&password=12345\n```\n### 3.2 添加payload\n为密码位置添加 payload，添加上我用AI自研的大密码字典\n![图片](assets/uploads/202610/d1b4baa70e.png)\n\n### 3.3 发起攻击\n- 1) 发起攻击，静待3分钟。\n- 2) 期间筛选请求响应状态为200，并按长度降序排序，**观察长度变化**\n- 3) 大概1分钟以后，第6009次请求长度出现变化（如下图左边），与其它请求不一致，暂停攻击，尝试密码\n- 4) 账号密码输入，提示登录成功，进入公司后台\n![图片](assets/uploads/202610/63eb9a5e8a.jpg)\n\n## 四、漏洞危害\n如上图右边，涵盖：\n- 管理员权限管理（删除管理员）\n- 公司信息（图中界面）\n- 会员管理（其中含62家公司名片管理后台账户密码，影响很大）\n- 留言板（3个工程师的电话）",
 "source":"notes/独立发现广东佛山一公司存在弱口令及用户枚举.md",
 "words":453,
 "reading_time":2,
-"updated":"2026-10-15",
+"updated":"2026-10-17",
 "draft":false
 },
 {
@@ -141,12 +133,12 @@ window.SEC_BLOG = {
 "source":"notes/sql注入二.md",
 "words":503,
 "reading_time":2,
-"updated":"2026-10-15",
+"updated":"2026-10-17",
 "draft":false
 },
 {
 "slug":"立项常见情报收集工具kali",
-"title":"[立项]常见情报收集工具（Kali）",
+"title":"Kali常见工具使用",
 "date":"2026-10-13",
 "category":"工具基础",
 "tags":[
@@ -156,27 +148,11 @@ window.SEC_BLOG = {
 "dirsearch"
 ],
 "summary":"Kali中常见的情报收集工具使用基础，含基础探测、dirsearch、nmap、sqlmap等",
-"body":"# 标题\n\n> 一句话说明这篇笔记要解决什么问题。\n\n## 一、背景 / 适用场景\n\n\n\n## 二、核心内容",
+"body":"# Kali中常见工具\n\n> 含nmap、sqlmap、dirsearch、msfconsole\n\n## 一、nmap\n### 1.1 IP探测\n常用nslookup工具，输入\n```kali\nnslookup https://example.com\n```\n就能获取某网站IP\n\n### 1.2 主机存活探测\n#### Ping扫描\n```kali\nnmap -sn 192.168.1.0/24\n```\n-sn 表示只做主机发现（禁用端口扫描），输出所有活动主机\n\n#### 跳Ping强扫\n当目标可能屏蔽了ICMP时，使用-Pn直接跳过主机发现，把所有目标视为在线\n```bash\nnmap -Pn 192.168.1.0/24\n```\n- 防火墙环境下很实用，但会增加扫描时间\n\n### 1.3 端口扫描\n#### 1.3.1 默认扫描\n直接指定目标，Nmap会扫描该主机最常见的1000个TCP端口\n```kali\nnmap 192.168.1.1\n```\n#### 1.3.2 指定端口与范围\n```kali\nnmap -p 80,443 192.168.1.1          # 只扫80和443\nnmap -p 1-1000 192.168.1.1          # 扫1到1000\nnmap -p- 192.168.1.1                # 扫描全部65535个端口\n```\n- 第三个 -p- 在实战中很重要，因为很多服务会故意开在非标准端口上，只扫常见端口容易遗漏\n#### 1.3.3 扫描方式的选择\n```bash\n\n参数\t扫描类型\t特点                  \t权限\n-sS\tSYN半开放扫描\t默认、速度快、不完成三次握手、隐蔽\t\n-sT\tTCP Connect扫描\t完成完整三次握手、更明显、但非root可用\n-sU\tUDP扫描\t        检测 UDP 服务（如DNS、SNMP），速度较慢\n```\n- -sS 是绝大多数场景下的首选。如果没有root权限，Nmap会自动回退到-sT\n\n### 1.4 版本识别\n识别端口上运行的服务和版本，这对后续判断漏洞至关重要（有的版本有针对性的漏洞）\n```kali\nnmap -sV 192.168.1.1\n```\n输出可能类似：80/tcp open http Apache httpd 2.4.xx，直接给出服务名和版本号\n\n如果希望更深入地探测，可以增加强度（1–9，默认 7）\n```kali\nnmap -sV --version-intensity 9 192.168.1.1\n```\n\n### 1.5 操作系统检测\n```kali\nnmap -O 192.168.1.1\n```\n\n### 1.6 脚本扫描（NSE）\nNmap自带一个脚本引擎（NSE）可以用于漏洞检测、信息枚举等\n```kali\nnmap -sC 192.168.1.1               # 运行默认脚本（安全、常规）\nnmap --script vuln 192.168.1.1     # 运行漏洞类脚本\n```\n- *注：-sC等价于--script=default，常与-sV组合使用*\n\n### 1.7 时序控制\n-T0 到 -T5 控制扫描速度，数字越大越快，但也更容易被检测或导致丢包\n- -T4：在速度和稳定性之间取得较好平衡，适合大多数局域网实验。\n- -T3：默认级别，比较保守\n\n1.8 基础流程\n#### 1.8.1 全量扫描\n```kali\nnmap -A -T4 192.168.1.1\n```\n-A 会同时开启操作系统检测、版本检测、默认脚本扫描等，适合快速获得目标的全貌，但输出信息量较大\n\n#### 1.8.2 分步扫描\n```kali\n# 第1步：发现存活主机\nnmap -sn 192.168.1.0/24\n\n# 第2步：对目标全端口快速扫描\nnmap -p- --min-rate 1000 -T4 192.168.1.100\n\n# 第3步：针对开放端口做服务版本和默认脚本扫描\nnmap -sC -sV -p 22,80,443,8080 192.168.1.100\n```\n\n### 1.9 如何看懂信息？\n![图片](assets/uploads/202610/kali-719ee0b44d.png)\n#### 端口扫描结果\n```bash\nNot shown: 999 closed tcp ports (reset)\n```\nNmap 默认扫描最常用的 1000 个 TCP 端口。这里显示有 999 个端口是关闭的（closed）。返回了 reset（重置包），说明目标设备收到了探测并明确拒绝了连接。\n\n接下来列出的是那 唯一 1 个开放的端口。\n\n```bash\n53/tcp open domain dnsmasq 2.51\n```\n- 53/tcp：开放了 53 号端口（TCP协议）。\n- open：端口是开放的，有程序在监听。\n- domain：53 端口是 DNS（域名解析服务）的默认端口。\n- dnsmasq 2.51：这是版本探测的结果。目标设备上运行dnsmasq程序，版本是 2.51。dnsmasq是一个轻量级DNS和DHCP服务端软件，常见于路由器、手机热点或内网服务器中。\n\n#### 硬件与设备类型探测\n```bash\nMAC Address: 92:74:51:B2:01:8F (Unknown)\n```\n获取到了目标的 MAC 地址。Unknown表示Nmap的厂商库中没有记录这个MAC地址段\n\n（以 92 开头的 MAC 地址通常是手机生成的随机 MAC，保护隐私）\n\n```nmap\nDevice type: phone\n```\nNmap 根据开放端口、网络特征等综合推测，这台设备是一台手机。\n\n#### 操作系统探测 (OS Detection)\n```bash\nRunning: Google Android 9.X|10.X|11.X, Linux 4.X\n```\n推测目标运行的是 Android 系统，版本在 9 到 11 之间，底层 Linux 内核是 4.X 版本\n\n\n## 二、sqlmap\n\n### 2.1 基本用法\n针对GET型请求的注入测试\n```kali\nsqlmap -u \"http://example.com\" --batch\n```\n- -u：指定目标 URL（必须带参数，比如 ?id=1）。\n- --batch：自动选择默认选项（避免卡在让你选 Yes/No 的交互界面）\n\n### 2.2 如何看懂\n> 这里是跟AI学习的\n```kali\n        ___\n       __H__\n ___ ___[.]_____ ___ ___  {1.7.2#stable}\n|_ -| . [(]     | .'| . |\n|___|_  [']_|_|_|__,|  _|\n      |_|V...       |_|   https://sqlmap.org\n\n[INFO] testing connection to the target URL\n先测试网络通不通\n[INFO] checking if the target is protected by some kind of WAF/IPS\n检查目标是否有防火墙或入侵防御系统拦截\n[INFO] testing if the target URL content is stable\n[INFO] heuristic (basic) test shows that GET parameter 'artist' might be injectable\n确认存在“布尔盲注”（通过页面返回的真假来判断数据）\n[INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'\n[INFO] GET parameter 'artist' appears to be 'AND boolean-based blind - WHERE or HAVING clause' injectable\n[INFO] testing 'MySQL >= 5.0 AND error-based - WHERE, HAVING, or ORDER BY clause'\n[INFO] GET parameter 'artist' is 'MySQL >= 5.0 AND error-based' injectable\n进一步确认存在“报错注入”（通过报错信息回显数据）\n[INFO] fetching banner\n获取数据库的版本信息\n[INFO] the back-end DBMS is MySQL\nweb server operating system: Linux Debian\nweb application technology: PHP 5.6.40, Apache 2.4.38\nback-end DBMS: MySQL >= 5.0 (MariaDB fork)\n目标后台数据库是 MySQL\n[INFO] fetched data logged to text files under '/root/.local/share/sqlmap/xxx/xxx\n结果保存在该目录下，里面有详细的日志和请求记录\n```\n\n### 2.3 脱库\n#### 第1步：爆出所有数据库名\n```kali\nsqlmap -u \"http://.../?id=1\" --dbs --batch\n```\n重点：会列出形如` [INFO] available databases [3]:`的，比如 information_schema、test、acuart\n> schema库一般不理会，忽略\n\n####  第2步：爆出指定数据库中的表\n```kali\nsqlmap -u \"http://.../?id=1\" -D acuart --tables --batch\n```\n- -D：指定你看的数据库名字\n输出重点：列出该库下的所有表，比如 users、password、products\n\n#### 第3步：爆出指定表中的字段（列名）\n```kali\nsqlmap -u \"http://.../?id=1\" -D acuart -T users --columns --batch\n```\n- -T：指定表名\n- 重点：显示 users 表里的字段结构，比如 id、uname、email\n\n#### 第4步：提取数据（拖库）\n```kali\nsqlmap -u \"http://.../?id=1\" -D acuart -T users -C uname,pass --dump --batch\n```\n- -C：指定要提取的列（例如上面所示的用户名和密码）。\n- --dump：导出数据。\n- 注：sqlmap 会把数据一行行打印出来\n## 三、dirsarch\n\n## 四、msfconsole",
 "source":"notes/立项常见情报收集工具kali.md",
-"words":30,
-"reading_time":1,
-"updated":"2026-10-15",
-"draft":false
-},
-{
-"slug":"立项burp-suite使用基础",
-"title":"[立项]Burp Suite使用基础",
-"date":"2026-10-13",
-"category":"工具基础",
-"tags":[
-"BP"
-],
-"summary":"Burp Suite使用基础",
-"body":"# Burp Suite使用基础\n\n\n## 一、背景 / 适用场景\n\n\n\n## 二、核心内容",
-"source":"notes/立项burp-suite使用基础.md",
-"words":18,
-"reading_time":1,
-"updated":"2026-10-15",
+"words":1061,
+"reading_time":3,
+"updated":"2026-10-17",
 "draft":false
 },
 {
@@ -185,15 +161,14 @@ window.SEC_BLOG = {
 "date":"2026-10-12",
 "category":"SQL注入",
 "tags":[
-"参数位置",
 "sql"
 ],
-"summary":"数字型、字符型、搜索型注入与靶场",
+"summary":"数字型、字符型、搜索型注入与靶场复现",
 "body":"# SQL注入（一）——按参数位置分三大类（含靶场)\n\n> 基于Pikachu靶场，按参数位置分类\n\n## 一、数字型注入\n### 1.1 概念\n数字型注入是指：SQL语句中的参数处于数字上下文，例如id=1，程序直接把用户输入拼接到SQL中，没有加引号，也没有使用参数化查询\n\n正常请求的请求体\n```http\nid=1&submit=Submit （例）\n```\n攻击者常用\n```http\n1 OR 1=1\n```\n就会生成SQL\n```sql\nSELECT * FROM articles WHERE id = 1 OR 1=1\n```\n由于OR的逻辑，1=1条件恒真，返回了数据库所有内容\n\n### 1.2 判断方法\n可以用curl和BP改包，这里以BP为例\n将请求体改为\n```http\nid=1 AND 1=1&submit=Submit\n```\n再改为\n```http\nid=1 AND 1=2&submit=Submit\n```\n比较两者的返回响应，如果1=1返回正常，1=2返回空或者错误异常说明AND条件被带入SQL，极可能存在数字型注入\n### 1.3 靶场实战\n先用BP抓包，发现其为POST请求，直接通过编辑器将请求体id修改为`id=1 OR 1=1`，放行后直接返回数据库所有内容\n![图片](assets/uploads/202610/sql-7faa80d436.png)\n\n## 二、字符型注入\n### 2.1 概念\n字符型注入是指：SQL 语句中的参数处于字符串上下文，例如 name = '$name'，程序把用户输入拼接到引号内部，没有使用参数化查询（同前文的恒真注入的例子）\n\n### 2.2 判断方法\n假设URL如下\n```http\n?name=&submit=Submit\n```\n可以尝试改为\n```http\n?name=1‘&submit=Submit （或其他任何数字字母，只要用单引号闭合即可）\n```\n如果返回错误，则可能存在字符型注入\n\n### 2.3 关键点理解\n字符型注入的关键是：先闭合原有引号，再构造自己的SQL逻辑，最后用注释符处理掉剩余引号。\n```sql\nSELECT * FROM users WHERE name = '$name'\n```\n输入了\n```http\n' OR 1=1 -- -\n```\n被拼接到SQL中\n```sql\n```bash\nSELECT * FROM users WHERE name = '' OR 1=1 -- -'\n```\n其中三个要点：\n- 第一个 ' 闭合了 `name = '`变成了`name = ''`\n- OR 1=1 是注入逻辑，重点在“一真一假恒为真”的逻辑特点\n- -- - 注释掉后面的 '\n\n### 2.4 与数字型注入的核心区别\n```sql\n数字型     WHERE id = $id        不需要闭合引号  \t1 OR 1=1\n字符型\t WHERE name = '$name'\t 需要先闭合引号  \t' OR '1'='1\n```\n与数字型注入相比，字符型注入通常需要先闭合引号，再构造特定逻辑，最后注释掉剩余引号。\n\n### 2.5 常用的闭合方式与注释符\n\n闭合\n```Example\n单引号\t        name = '$name'        \t'\n双引号\t        name = \"$name\"          \"\n括号+单引号\tname = ('$name')\t')\n括号+双引号\tname = (\"$name\")\t\")\nLIKE 语句\tname LIKE '%$name%'\t%' 或 '\n```\n\n注释\n```Example\n-- （注意后面通常要加空格）\n#\n/* */\n```\n\n### 2.6 靶场实战\n先尝试闭合单引号看是否报错，在输入框直接输入`1‘`查看结果（GET请求也可直接在URL里拼），出现报错\n![图片](assets/uploads/202610/sql-ea84d01416.png)\n然后输入`1' OR '1+1=2`拼接SQL语句\n![图片](assets/uploads/202610/sql-a38cf05951.png)\n数据库内容全部回显，完成\n> 注意到了恒真条件可以自行安排，可更直观的表达\n\n## 三、搜索型注入\n### 3.1 什么是搜索型注入\n搜索型注入本质上是字符型注入的一种变体，通常出现在搜索功能中，程序使用LIKE语句进行模糊匹配\n\n正常请求\n```http\n?keyword=安全\n```\n生成SQL（正常）\n```sql\nSELECT * FROM articles WHERE title LIKE '%安全%'\n```\n攻击者可用\n```http\n?keyword=' OR 1=1 -- \n```\n生成SQL（恶意）\n```sql\nSELECT * FROM articles WHERE title LIKE '%' OR 1=1 -- %'\n```\n其中三个要点：\n- %' 闭合了原 SQL 中的 '%；\n- OR 1=1 使条件恒真；\n- -- 注释掉后面的 %'。\n\n结果可能返回表中所有文章。\n\n### 3.2 判断方法\n同上，单引号闭合看是否报错\n> 后续会补上每种类型的具体判断思路\n\n### 3.3 靶场实战\n![图片](assets/uploads/202610/sql-43b3e9e6f3.png)",
 "source":"notes/sql注入实战.md",
 "words":610,
 "reading_time":2,
-"updated":"2026-10-15",
+"updated":"2026-10-17",
 "draft":false
 },
 {
@@ -209,12 +184,12 @@ window.SEC_BLOG = {
 "source":"notes/linux一基础命令.md",
 "words":696,
 "reading_time":2,
-"updated":"2026-10-15",
+"updated":"2026-10-17",
 "draft":false
 },
 {
 "slug":"数据库基础",
-"title":"数据库基础",
+"title":"数据库语句基础",
 "date":"2026-09-20",
 "category":"Web基础知识",
 "tags":[
@@ -225,7 +200,7 @@ window.SEC_BLOG = {
 "source":"notes/数据库基础.md",
 "words":169,
 "reading_time":1,
-"updated":"2026-10-15",
+"updated":"2026-10-17",
 "draft":false
 },
 {
@@ -242,7 +217,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入原理.md",
 "words":672,
 "reading_time":2,
-"updated":"2026-10-15",
+"updated":"2026-10-17",
 "draft":false
 },
 {
@@ -258,7 +233,7 @@ window.SEC_BLOG = {
 "source":"notes/http协议.md",
 "words":1780,
 "reading_time":5,
-"updated":"2026-10-15",
+"updated":"2026-10-17",
 "draft":false
 },
 {
@@ -275,7 +250,7 @@ window.SEC_BLOG = {
 "source":"notes/ip地址与端口.md",
 "words":578,
 "reading_time":2,
-"updated":"2026-10-15",
+"updated":"2026-10-17",
 "draft":false
 },
 {
@@ -289,7 +264,21 @@ window.SEC_BLOG = {
 "source":"notes/这是神的开始吗.md",
 "words":73,
 "reading_time":1,
-"updated":"2026-10-15",
+"updated":"2026-10-17",
+"draft":false
+},
+{
+"slug":"开始",
+"title":"2026.9.13网站成立日",
+"date":"2026-09-13",
+"category":"杂谈",
+"tags":[],
+"summary":"网站成立日杂谈",
+"body":"# Day0：26.9.13\n\n> 网站成立纪念日\n\n## 一、网站简介\n正常浏览即可\n不知道怎么介绍\n特色：\n- 有目录\n- 有清晰分类\n- 管理端基础功能完善\n记得三点：\n- 有反馈记录\n- 建议按分类查找\n- 逻辑较杂乱\n## 二、仍需改进的地方（自我评价）\n- 无法插入思维导图\n- 仍有少量影响使用的bug\n- \n## 三、计划表\nIP端口→HTTP、数据库→Linux基础→sql注入→kali一些工具",
+"source":"notes/开始.md",
+"words":121,
+"reading_time":1,
+"updated":"2026-10-17",
 "draft":false
 }
 ],
@@ -297,39 +286,39 @@ window.SEC_BLOG = {
 "独立发现广东佛山一公司存在弱口令及用户枚举":[],
 "sql注入二":[],
 "立项常见情报收集工具kali":[],
-"立项burp-suite使用基础":[],
 "sql注入实战":[],
 "linux一基础命令":[],
 "数据库基础":[],
 "sql注入原理":[],
 "http协议":[],
 "ip地址与端口":[],
-"这是神的开始吗":[]
+"这是神的开始吗":[],
+"开始":[]
 },
 "backlinks":{
 "独立发现广东佛山一公司存在弱口令及用户枚举":[],
 "sql注入二":[],
 "立项常见情报收集工具kali":[],
-"立项burp-suite使用基础":[],
 "sql注入实战":[],
 "linux一基础命令":[],
 "数据库基础":[],
 "sql注入原理":[],
 "http协议":[],
 "ip地址与端口":[],
-"这是神的开始吗":[]
+"这是神的开始吗":[],
+"开始":[]
 },
 "broken":{
 "独立发现广东佛山一公司存在弱口令及用户枚举":[],
 "sql注入二":[],
 "立项常见情报收集工具kali":[],
-"立项burp-suite使用基础":[],
 "sql注入实战":[],
 "linux一基础命令":[],
 "数据库基础":[],
 "sql注入原理":[],
 "http协议":[],
 "ip地址与端口":[],
-"这是神的开始吗":[]
+"这是神的开始吗":[],
+"开始":[]
 }
 };

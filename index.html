@@ -3,15 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0a0e14" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f8fb" media="(prefers-color-scheme: light)">
+<!-- 首屏就落位已保存的主题，避免浅色用户在深色底上闪一下 -->
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('sec-theme');
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  } catch (e) { /* 无痕模式或 file:// 限制：沿用默认深色 */ }
+})();
+</script>
 <title>Deus · 个人知识博客</title>
 <meta name="description" content="个人网络安全学习与实战笔记库">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0f14'/%3E%3Cpath d='M16 5l9 4v7c0 5.6-3.7 9.8-9 11-5.3-1.2-9-5.4-9-11V9l9-4z' fill='none' stroke='%2322d3ee' stroke-width='2'/%3E%3Cpath d='M12 16l3 3 5.5-6' fill='none' stroke='%2334d399' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d0f12'/%3E%3Cpath d='M16 5l9 4v7c0 5.6-3.7 9.8-9 11-5.3-1.2-9-5.4-9-11V9l9-4z' fill='none' stroke='%23e6ebf1' stroke-width='2'/%3E%3Cpath d='M12 16l3 3 5.5-6' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<!-- 资源全部走同源相对路径：GitHub Pages 上可立即生效，不经过 jsDelivr 的 @main 缓存 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-dark.min.css" id="hljs-theme-dark">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-light.min.css" id="hljs-theme-light" disabled>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/css/style.css">
-<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261015232600">
-<link rel="stylesheet" href="assets/css/feedback.css?v=20261015232600">
-<style id="site-notice-css">.site-notice{display:flex;align-items:center;gap:10px;padding:9px 16px;font:13.5px/1.6 var(--font-sans);color:#4a2f00;background:linear-gradient(90deg,#fff6dc,#ffe9b8);border-bottom:1px solid rgba(180,130,20,.35)}.site-notice .sn-ic{flex:0 0 auto;display:grid;place-items:center}.site-notice .sn-t{flex:1;min-width:0}.site-notice b{font-weight:700}.site-notice .sn-x{flex:0 0 auto;width:24px;height:24px;border:0;border-radius:50%;background:rgba(120,80,0,.12);color:#4a2f00;font-size:15px;line-height:1;cursor:pointer}.site-notice .sn-x:hover{background:rgba(120,80,0,.24)}</style><style id="toc-drawer-css">.toc-btn{display:none!important}@media (max-width:900px){.toc-btn{display:inline-flex!important}.toc-btn[hidden]{display:none!important}}.toc-drawer{position:fixed;top:0;right:0;bottom:0;z-index:56;width:288px;max-width:86vw;background:var(--bg);border-left:1px solid var(--border);padding:70px 18px 28px;transform:translateX(103%);transition:transform .24s var(--ease);overflow-y:auto}body.toc-open .toc-drawer{transform:none}body.toc-open .backdrop{opacity:1;visibility:visible}.toc-drawer-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font-size:13px;font-weight:600;color:var(--text-strong)}.toc-drawer .toc{display:block;position:static;top:auto;max-height:none;overflow:visible;padding-bottom:24px}.toc-drawer ul{border-left:1px solid var(--border)}</style></head>
+<script>window.SEC_ASSET_V = '?v=20261017n';</script>
+<link rel="stylesheet" href="assets/css/style.css?v=20261017n">
+<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261017n">
+<link rel="stylesheet" href="assets/css/feedback.css?v=20261017n">
+<link rel="preload" href="assets/js/app.js?v=20261017n" as="script">
+<link rel="stylesheet" href="assets/css/liquid.css?v=20261017n">
+<script>
+/* 只有直接落在文章页时才预取渲染器：首页/归档/标签页不需要这 177KB */
+(function () {
+  if (location.hash.indexOf('#/note/') !== 0) return;
+  var V = window.SEC_ASSET_V || '';
+  ['assets/vendor/marked.min.js', 'assets/vendor/highlight.min.js', 'assets/js/render.js']
+    .forEach(function (f) {
+      var l = document.createElement('link');
+      l.rel = 'preload';
+      l.as = 'script';
+      l.href = f + V;
+      document.head.appendChild(l);
+    });
+})();
+</script>
+<style id="toc-drawer-css">.toc-btn{display:none!important}@media (max-width:900px){.toc-btn{display:inline-flex!important}.toc-btn[hidden]{display:none!important}}.toc-drawer{position:fixed;top:0;right:0;bottom:0;z-index:56;width:288px;max-width:86vw;background:var(--bg);border-left:1px solid var(--border);padding:70px 18px 28px;transform:translateX(103%);transition:transform .24s var(--ease);overflow-y:auto}body.toc-open .toc-drawer{transform:none}body.toc-open .backdrop{opacity:1;visibility:visible}.toc-drawer-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font-size:13px;font-weight:600;color:var(--text-strong)}.toc-drawer .toc{display:block;position:static;top:auto;max-height:none;overflow:visible;padding-bottom:24px}.toc-drawer ul{border-left:1px solid var(--border)}</style></head>
 <body>
 
 <div class="progress-bar" id="progressBar"></div>
@@ -54,10 +85,11 @@
     </div>
   </div>
 </header>
-<div class="site-notice" id="siteNotice" role="status"><span class="sn-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h13a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span><span class="sn-t"><b>维护通知：</b>欢迎各面试官、学长访问我的网站。已立项的内容会在面试前陆续更新完成，请以面试时的站点情况为准！</span><button class="sn-x" type="button" aria-label="关闭通知">&times;</button></div>
+<div class="site-notice" id="siteNotice" role="status"><span class="sn-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h13a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span><span class="sn-t"><b>维护通知：</b>站点仍处于初级阶段，内容不完善，敬请谅解。</span><button class="sn-x" type="button" aria-label="关闭通知">&times;</button></div>
 
 <div class="layout">
   <aside class="sidebar" id="sidebar">
+<div class="drawer-grip" aria-hidden="true"></div>
 <ul class="side-list mobile-feedback" style="margin:0 0 12px">
 <li><a href="javascript:void(0)" id="mobileFeedback" data-nav="feedback" style="font-weight:600">反馈</a></li>
 </ul>
@@ -108,30 +140,29 @@
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
 </button>
 
-<script src="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/js/render.js"></script>
 <!-- data/notes.js 改成按需加载：file:// 与中间代理的强缓存会用旧产物，
      用 ?t=时间戳 强制每次都重新拉；第一次加载完成后才启动 app.js。 -->
 <script>
 (function boot(){
+  var V = '?v=20261017n';
   var SOURCES = ['data/notes.js', 'assets/js/app.js'];
   var i = 0;
   function next(){
     if (i >= SOURCES.length) return;
     var src = SOURCES[i++];
     var s = document.createElement('script');
-    // 仅给 data/notes.js 加时间戳：app.js 改动频率低，正常缓存
-    s.src = src + (/notes\.js$/.test(src) ? '?t=' + Date.now() : '');
+    // 仅给 data/notes.js 加时间戳：app.js 改动频率低，用版本号缓存
+    s.src = src + (/notes\.js$/.test(src) ? '?t=' + Date.now() : V);
     s.onload = s.onerror = next;
     document.head.appendChild(s);
   }
   next();
 })();
 </script>
-<script src="assets/js/feedback.js?v=20261015232600"></script>
-<script src="assets/js/sync-notice.js?v=20261015232600"></script>
+<script src="assets/js/liquid.js?v=20261017n"></script>
+<script src="assets/js/feedback.js?v=20261017n"></script>
+<script src="assets/js/sync-notice.js?v=20261017n"></script>
 <script>(function(){var b=document.getElementById("siteNotice");if(!b)return;var x=b.querySelector(".sn-x");if(x)x.addEventListener("click",function(){sessionStorage.setItem("secnot_notice_closed","1");b.remove();});})();</script>
-<div class="toc-drawer" id="tocDrawer" aria-hidden="true"><div class="toc-drawer-head"><span>目录</span><button type="button" class="icon-btn" id="tocClose" aria-label="关闭目录">&times;</button></div><nav class="toc" id="tocMobile"></nav></div>
+<div class="toc-drawer" id="tocDrawer" aria-hidden="true"><div class="drawer-grip" aria-hidden="true"></div><div class="toc-drawer-head"><span>目录</span><button type="button" class="icon-btn" id="tocClose" aria-label="关闭目录">&times;</button></div><nav class="toc" id="tocMobile"></nav></div>
 </body>
 </html>

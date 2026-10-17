@@ -2,7 +2,7 @@
    SecNotes 展示端反馈模块
    --------------------------------------------------------------------------
    站内一个极简反馈入口（文字 + 图片，无富文本）：
-   · 方式一（邮箱）：仅展示「中国境内 / 海外」两个收件邮箱（含双语注释）
+   · 方式一（邮箱）：仅展示「主用 / 备用」两个收件邮箱
      以及 GitHub 主页链接 —— 无文本框、不跳转邮件客户端，访客复制邮箱自行发送；
    · 方式二（GitHub）：把内容组装成 GitHub Issue 的预填草稿，在新标签页打开
      issues/new 页面，访客用自己的账号点一下「Submit」即落地。
@@ -50,8 +50,8 @@
       '</div>' +
       '<div class="fb-recip" id="fbRecip">' +
         '<div class="fb-recip-label">接收邮箱（Recipients）—— 请复制对应邮箱，用你自己的邮件客户端发送</div>' +
-        '<div class="fb-recip-item"><b>中国境内(China)</b><br /><span class="fb-mail">deus8800@126.com</span></div>' +
-        '<div class="fb-recip-item"><b>海外(Overseas)</b><br /><span class="fb-mail">deus880088@gmail.com</span></div>' +
+        '<div class="fb-recip-item"><b>主用</b><br /><span class="fb-mail">deus8800@126.com</span></div>' +
+        '<div class="fb-recip-item"><b>备用</b><br /><span class="fb-mail">deus880088@gmail.com</span></div>' +
         '<div class="fb-recip-item fb-gh"><b>我的 GitHub 主页（My GitHub Profile）</b><br />' +
           '<a class="fb-mail" href="https://github.com/deus-088" target="_blank" rel="noopener">https://github.com/deus-088</a></div>' +
       '</div>' +
