@@ -278,24 +278,56 @@
   var sheenScroll = 0;
   var sheenPoint = null;
 
+  /* 卡片 3D 倾斜与镜面高光共用这一次采样：
+     --mx/--my 决定光斑落点，--tilt-rx/--tilt-ry 决定倾角，同帧写入，两者永远同步。 */
+  var TILT_MAX = 9;                       // 卡片最大倾角（度）
+  var CARD_SEL = '.note-card, .card';
+  var sheenTilt = null;                   // ['Xdeg','Ydeg']；非卡片为 null
+
   var paintSheen = raf(function () {
     if (!sheenEl || !sheenPoint) return;
     sheenEl.style.setProperty('--mx', sheenPoint[0] + 'px');
     sheenEl.style.setProperty('--my', sheenPoint[1] + 'px');
+    if (sheenTilt) {
+      sheenEl.style.setProperty('--tilt-rx', sheenTilt[0]);
+      sheenEl.style.setProperty('--tilt-ry', sheenTilt[1]);
+    }
   });
+
+  function tiltFor(el, x, y, rect) {
+    if (!el.matches || !el.matches(CARD_SEL)) return null;
+    var w = rect.width || 1;
+    var h = rect.height || 1;
+    /* 归一到 [-0.5, 0.5]：鼠标在左半区时卡片向观察者左侧翻，右边同理 */
+    var px = Math.min(1, Math.max(0, x / w)) - 0.5;
+    var py = Math.min(1, Math.max(0, y / h)) - 0.5;
+    return [(-py * TILT_MAX * 2).toFixed(2) + 'deg', (px * TILT_MAX * 2).toFixed(2) + 'deg'];
+  }
+
+  function restTilt(el) {
+    if (!el || !el.style) return;
+    el.style.setProperty('--tilt-rx', '0deg');
+    el.style.setProperty('--tilt-ry', '0deg');
+  }
 
   function onPointerOver(e) {
     if (reduced() || e.pointerType !== 'mouse') return;
     var t = e.target;
-    var el = t && t.closest ? t.closest('.note-card, .hero, .load-more, .side-list a, .tag, .tag-cloud-lg a') : null;
+    var el = t && t.closest ? t.closest('.note-card, .card, .hero, .load-more, .side-list a, .tag, .tag-cloud-lg a') : null;
     if (el === sheenEl) return;
+    /* 离开卡片时把倾角归零，回正交给 CSS 过渡，避免瞬间弹平 */
+    if (sheenEl && sheenEl !== el) restTilt(sheenEl);
     sheenEl = el;
     sheenRect = el ? el.getBoundingClientRect() : null;
     sheenScroll = window.pageYOffset;
     /* 进入瞬间就落位，否则第一帧会停在上一次的位置再跳过去 */
     if (el && sheenRect) {
       sheenPoint = [e.clientX - sheenRect.left, e.clientY - sheenRect.top];
+      sheenTilt = tiltFor(el, sheenPoint[0], sheenPoint[1], sheenRect);
       paintSheen();
+    } else {
+      sheenPoint = null;
+      sheenTilt = null;
     }
   }
 
@@ -307,6 +339,7 @@
       sheenRect = sheenEl.getBoundingClientRect();
     }
     sheenPoint = [e.clientX - sheenRect.left, e.clientY - sheenRect.top];
+    sheenTilt = tiltFor(sheenEl, sheenPoint[0], sheenPoint[1], sheenRect);
     paintSheen();
   }
 
@@ -430,8 +463,11 @@
       if (!sheenEl) return;
       var to = e.relatedTarget;
       if (to && sheenEl.contains(to)) return;
+      /* 离开卡片：倾角回正（补间交给 CSS 的 .5s 过渡），否则卡片会一直歪着 */
+      restTilt(sheenEl);
       sheenEl = null;
       sheenRect = null;
+      sheenTilt = null;
     }, { passive: true });
 
     /* 动态内容（加载更多、路由切换）也走同一套入场编排 */

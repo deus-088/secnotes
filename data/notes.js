@@ -9,14 +9,15 @@ window.SEC_BLOG = {
 "footer":"©2026 By Deus",
 "defaultTheme":"dark",
 "pageSize":8,
-"siteUrl":"https://deus-088.github.io/secnotes/"
+"siteUrl":"https://deus-088.github.io/secnotes/",
+"menu":{}
 },
 "stats":{
-"notes":12,
-"categories":8,
-"tags":16,
-"words":8001,
-"builtAt":"2026-10-18 18:02"
+"notes":13,
+"categories":9,
+"tags":18,
+"words":8728,
+"builtAt":"2026-11-01 16:23"
 },
 "categories":[
 [
@@ -49,6 +50,10 @@ window.SEC_BLOG = {
 ],
 [
 "计算机基础",
+1
+],
+[
+"逻辑漏洞",
 1
 ]
 ],
@@ -114,25 +119,58 @@ window.SEC_BLOG = {
 1
 ],
 [
+"爆破",
+1
+],
+[
 "端口",
+1
+],
+[
+"验证码",
+1
+]
+],
+"subcategories":[
+[
+"验证码相关",
 1
 ]
 ],
 "notes":[
 {
+"slug":"短信验证码相关漏洞",
+"title":"短信验证码相关漏洞",
+"date":"2026-10-25",
+"category":"逻辑漏洞",
+"subcategory":"验证码相关",
+"tags":[
+"爆破",
+"验证码"
+],
+"summary":"短信验证码爆破、回显、共享漏洞",
+"body":"# 验证码有关漏洞\n\n\n## 一、短信轰炸\n短信轰炸，即反复调用短信验证码下发接口，重复、大量向受害者发送多条短信（或向多位受害者发送短信），其危害性包括：\n\n- 消耗服务方的资源（话费，占用）\n- 受害者遭到骚扰，甚至可借此作为社会工程学攻击的有利基础\n\n一般将短信轰炸分为两类：\n### 1.1. 纵向轰炸\n纵向轰炸：向**同一个受害者**发送**多条（恶意）短信验证码**\n\n通常使用Burp Suite的重放器（Repeater）模块来进行攻击\n> 为了统一说法，下面将n次发送短信仍为成功发送状态，称为 阈值>n\n#### 攻击思路：\n- **1**. **抓包分析**：找到发短信验证码的接口，将其请求包拦下，分析请求体\n\n如果是**无需前置验证码**、**无需登录**就可以成功调用的接口，可以进一步研究\n\n- **2**. **限制测试**：用重放器做二次发包，观察返回是否一致、观察是否收到第二条短信\n\n如果第二条短信成功发送，说明短信验证码发送频率限制较松 *（平时登录也知道 一般是60秒发一条）*\n- **3**. **初步攻击**\n\n将包转到攻击器，配置载荷等数据如下：\n\n最大并发请求数：1 ，间隔：1秒，载荷类型：空载荷，载荷数量：20\n\n然后点击发送就等待跑完\n\n#### 分析思路\n\n- 如果无需任何前置验证就可以进入 → 防护缺失\n- 如果连续调用两次成功 → 下发阈值＞2 （已经不合规）\n- 如果攻击n次以后都是成功状态，且真实收到n个验证码，说明阈值 > n，漏洞可能成立\n\n#### 常见对抗手段\n**（1）格式差异绕过校验**\n\n在手机号前后插入空格、+86、086、换行符等，如果系统只在前端做判断，就可能出现“前端认为这是新号码，实际仍然发到同一个手机号”的情况。例如，末尾加空格在前端检测时被视为不同号码，但进入数据库时空格被过滤，最终仍然命中同一号码\n\n**（2）删除Cookie或复用会话标识**\n\n如果平台仅依靠 Cookie 记录“是否已发送”，删除 Cookie 后即可重新请求；如果限流状态只存在于客户端或单一会话中，攻击者可以通过丢弃会话标识来重置计数。\n\n**（3）参数污染 / 重复参数**\n\n在请求中重复传入手机号参数（如 phone=A&phone=B），如果后端解析逻辑不当，可能同时向多个号码发送，或者绕过只检查第一个号码的限流逻辑\n\n\n**（4）代理池与设备轮换**\n\n当 IP 频率限制生效后，使用代理IP池分摊请求；当手机号频控生效后，则切换到号码枚举模式，用大量不同号码轮流请求，使单号限流无法触发。",
+"source":"notes/短信验证码相关漏洞.md",
+"words":773,
+"reading_time":2,
+"updated":"2026-11-01",
+"draft":false
+},
+{
 "slug":"独立发现广东佛山一公司存在弱口令及用户枚举",
-"title":"[置顶] 独立发现：某公司某业务后台存在弱口令及用户枚举",
+"title":"实战1:某公司某业务后台存在弱口令及用户枚举",
 "date":"2026-10-18",
 "category":"漏洞报告",
+"subcategory":"",
 "tags":[
 "漏洞报告"
 ],
 "summary":"佛山市某科技有限公司云名片业务管理后台存在弱口令与任意用户枚举",
-"body":"# 佛山市某科技公司云名片后台管理系统\n# 存在弱口令与用户枚举\n\n> 作者说：第一v次独立发现一个小漏洞，还是有点激动的（虽然没有什么技术含量）\n\n> 已经将漏洞反馈给公司负责人，但似乎没有得到回答？\n\n## 一、基本信息\n- 漏洞类型：弱口令、POST型\n- 弱口令账号：admin，密码：test123\n- 漏洞URL：修复前暂不公布\n\n## 二、任意用户枚举\n登录时分别尝试账号admin1和admin，发现其返回的提示不一致\n![图片](assets/uploads/202610/__new__-8e4ce2a609.png)\n又多试了几个账户，回显均同右图，可以确定存在用户枚举，且admin就是实际存在的用户\n\n\n## 三、弱口令\n### 3.1 拦截请求包\n使用BP拦截请求包，请求类型为POST型，初始请求体为：\n```http\nusername=admin&password=12345\n```\n### 3.2 添加payload\n为密码位置添加 payload，添加上我用AI自研的大密码字典\n![图片](assets/uploads/202610/30788b6f4a.png)\n\n### 3.3 发起攻击\n- 1) 发起攻击，静待3分钟。\n- 2) 期间筛选请求响应状态为200，并按长度降序排序，**观察长度变化**\n- 3) 大概1分钟以后，第6009次请求长度出现变化（如下图左边），与其它请求不一致，暂停攻击，尝试密码\n- 4) 账号密码输入，提示登录成功，进入公司后台\n\n![图片](assets/uploads/202610/9ed503d3c0.jpg)\n## 四、漏洞危害\n如上图右边，涵盖：\n- 管理员权限管理（删除管理员）\n- 公司信息（上图右边界面）\n- 会员管理（其中含62家公司名片管理后台账户密码，影响很大）\n- 留言板（3个工程师的电话）",
+"body":"# 佛山市某公司云名片后台管理系统存在弱口令\n\n> 用户枚举 → 登录接口无限制 → 爆破 → 弱口令\n\n## 一、基本信息\n- \n- 漏洞类型：弱口令、POST型\n- 弱口令账号：admin，密码：test123\n- 漏洞URL：修复前暂不公布\n\n## 二、任意用户枚举\n登录时分别尝试账号admin1和admin，发现其返回的提示不一致\n![图片](assets/uploads/202610/__new__-8e4ce2a609.png)\n又多试了几个账户，回显均同右图，可以确定存在用户枚举，且admin就是实际存在的用户\n\n\n## 三、弱口令\n### 3.1 拦截请求包\n使用BP拦截请求包，请求类型为POST型，初始请求体为：\n```http\nusername=admin&password=12345\n```\n### 3.2 添加payload\n为密码位置添加 payload，添加上我用AI自研的大密码字典\n![图片](assets/uploads/202610/30788b6f4a.png)\n\n### 3.3 发起攻击\n- 1) 发起攻击，静待3分钟。\n- 2) 期间筛选请求响应状态为200，并按长度降序排序，**观察长度变化**\n- 3) 大概1分钟以后，第6009次请求长度出现变化（如下图左边），与其它请求不一致，暂停攻击，尝试密码\n- 4) 账号密码输入，提示登录成功，进入公司后台\n\n![图片](assets/uploads/202610/9ed503d3c0.jpg)\n## 四、漏洞危害\n如上图右边，涵盖：\n- 管理员权限管理（删除管理员）\n- 公司信息（上图右边界面）\n- 会员管理（其中含62家公司名片管理后台账户密码，影响很大）\n- 留言板（3个工程师的电话）",
 "source":"notes/独立发现广东佛山一公司存在弱口令及用户枚举.md",
-"words":411,
-"reading_time":2,
-"updated":"2026-10-18",
+"words":365,
+"reading_time":1,
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -140,6 +178,7 @@ window.SEC_BLOG = {
 "title":"XSS（一）基础",
 "date":"2026-10-16",
 "category":"XSS",
+"subcategory":"",
 "tags":[
 "XSS"
 ],
@@ -148,7 +187,7 @@ window.SEC_BLOG = {
 "source":"notes/xss一基础.md",
 "words":664,
 "reading_time":2,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -156,6 +195,7 @@ window.SEC_BLOG = {
 "title":"情报收集入门（二）基础信息收集流程",
 "date":"2026-10-13",
 "category":"情报收集",
+"subcategory":"",
 "tags":[
 "情报收集"
 ],
@@ -164,7 +204,7 @@ window.SEC_BLOG = {
 "source":"notes/情报收集入门二简单的综合信息收集.md",
 "words":619,
 "reading_time":2,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -172,6 +212,7 @@ window.SEC_BLOG = {
 "title":"情报收集入门（一）工具使用",
 "date":"2026-10-07",
 "category":"工具基础",
+"subcategory":"",
 "tags":[
 "kali",
 "nmap",
@@ -183,7 +224,7 @@ window.SEC_BLOG = {
 "source":"notes/立项常见情报收集工具kali.md",
 "words":1250,
 "reading_time":4,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -191,6 +232,7 @@ window.SEC_BLOG = {
 "title":"SQL注入（二）联合注入",
 "date":"2026-10-03",
 "category":"SQL注入",
+"subcategory":"",
 "tags":[
 "UNION",
 "sql"
@@ -200,7 +242,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入二.md",
 "words":527,
 "reading_time":2,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -208,6 +250,7 @@ window.SEC_BLOG = {
 "title":"SQL注入（一）按参数位置三大类",
 "date":"2026-09-28",
 "category":"SQL注入",
+"subcategory":"",
 "tags":[
 "sql"
 ],
@@ -216,7 +259,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入实战.md",
 "words":623,
 "reading_time":2,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -224,6 +267,7 @@ window.SEC_BLOG = {
 "title":"SQL注入原理（以字符型为例）",
 "date":"2026-09-24",
 "category":"SQL注入",
+"subcategory":"",
 "tags":[
 "SQL",
 "原理"
@@ -233,7 +277,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入原理.md",
 "words":632,
 "reading_time":2,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -241,6 +285,7 @@ window.SEC_BLOG = {
 "title":"数据库语句基础",
 "date":"2026-09-20",
 "category":"Web基础知识",
+"subcategory":"",
 "tags":[
 "数据库"
 ],
@@ -249,7 +294,7 @@ window.SEC_BLOG = {
 "source":"notes/数据库基础.md",
 "words":174,
 "reading_time":1,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -257,6 +302,7 @@ window.SEC_BLOG = {
 "title":"Linux基础（一）",
 "date":"2026-09-19",
 "category":"计算机基础",
+"subcategory":"",
 "tags":[
 "Linux"
 ],
@@ -265,7 +311,7 @@ window.SEC_BLOG = {
 "source":"notes/linux一基础命令.md",
 "words":649,
 "reading_time":2,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -273,6 +319,7 @@ window.SEC_BLOG = {
 "title":"HTTP协议",
 "date":"2026-09-16",
 "category":"Web基础知识",
+"subcategory":"",
 "tags":[
 "HTTP"
 ],
@@ -281,7 +328,7 @@ window.SEC_BLOG = {
 "source":"notes/http协议.md",
 "words":1735,
 "reading_time":5,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -289,6 +336,7 @@ window.SEC_BLOG = {
 "title":"IP地址与端口",
 "date":"2026-09-15",
 "category":"Web基础知识",
+"subcategory":"",
 "tags":[
 "IP",
 "端口"
@@ -298,7 +346,7 @@ window.SEC_BLOG = {
 "source":"notes/ip地址与端口.md",
 "words":578,
 "reading_time":2,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 },
 {
@@ -306,17 +354,19 @@ window.SEC_BLOG = {
 "title":"建站Day 0",
 "date":"2026-09-13",
 "category":"杂谈",
+"subcategory":"",
 "tags":[],
 "summary":"2026.9.13网站成立日 杂谈",
 "body":"# Day0：26.9.13\n\n> 网站成立纪念日\n\n> 我想成为渗透糕手（许愿）\n## 一、网站简介\n正常浏览即可\n不知道怎么介绍\n特色：\n- 鼠标移动有光感\n- 有目录\n- 有清晰分类\n- 管理端基础功能完善\n记得三点：\n- 有反馈记录\n- 建议按分类查找\n- 逻辑较杂乱\n## 二、仍需改进的地方（自我评价）\n- 无法插入思维导图\n- 仍有少量影响使用的bug\n- \n## 三、计划表\nIP端口→HTTP、数据库→Linux基础→sql注入→情报收集入门",
 "source":"notes/开始.md",
 "words":139,
 "reading_time":1,
-"updated":"2026-10-18",
+"updated":"2026-11-01",
 "draft":false
 }
 ],
 "links":{
+"短信验证码相关漏洞":[],
 "独立发现广东佛山一公司存在弱口令及用户枚举":[],
 "xss一基础":[],
 "情报收集入门二简单的综合信息收集":[],
@@ -333,6 +383,7 @@ window.SEC_BLOG = {
 "开始":[]
 },
 "backlinks":{
+"短信验证码相关漏洞":[],
 "独立发现广东佛山一公司存在弱口令及用户枚举":[],
 "xss一基础":[],
 "情报收集入门二简单的综合信息收集":[],
@@ -349,6 +400,7 @@ window.SEC_BLOG = {
 "开始":[]
 },
 "broken":{
+"短信验证码相关漏洞":[],
 "独立发现广东佛山一公司存在弱口令及用户枚举":[],
 "xss一基础":[],
 "情报收集入门二简单的综合信息收集":[

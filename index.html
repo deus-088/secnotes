@@ -21,12 +21,13 @@
 <!-- 资源全部走同源相对路径：GitHub Pages 上可立即生效，不经过 jsDelivr 的 @main 缓存 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-dark.min.css" id="hljs-theme-dark">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-light.min.css" id="hljs-theme-light" disabled>
-<script>window.SEC_ASSET_V = '?v=20261017n';</script>
-<link rel="stylesheet" href="assets/css/style.css?v=20261017n">
-<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261017n">
-<link rel="stylesheet" href="assets/css/feedback.css?v=20261017n">
-<link rel="preload" href="assets/js/app.js?v=20261017n" as="script">
-<link rel="stylesheet" href="assets/css/liquid.css?v=20261017n">
+<script>window.SEC_ASSET_V = '?v=20261101a';</script>
+<link rel="stylesheet" href="assets/css/style.css?v=20261101a">
+<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261101a">
+<link rel="stylesheet" href="assets/css/feedback.css?v=20261101a">
+<link rel="preload" href="assets/js/app.js?v=20261101a" as="script">
+<link rel="stylesheet" href="assets/css/liquid.css?v=20261101a">
+<link rel="stylesheet" href="assets/css/home.css?v=20261101a">
 <script>
 /* 只有直接落在文章页时才预取渲染器：首页/归档/标签页不需要这 177KB */
 (function () {
@@ -49,48 +50,94 @@
 
 <header class="topbar">
   <div class="topbar-inner">
-    <button class="icon-btn menu-btn" id="menuBtn" aria-label="打开导航菜单">
-      <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-    </button>
-
+    <div class="nav-brand">
     <a class="brand" href="#/">
-      <span class="brand-mark">
-        <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true">
-          <path d="M16 4l10 4.5V16c0 6.2-4.1 11-10 12.3C10.1 27 6 22.2 6 16V8.5L16 4z" fill="none" stroke="currentColor" stroke-width="2"/>
-          <path d="M11.5 16.2l3.1 3.1 6-6.6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <!-- 品牌头像：24px 圆形，靠容器 border-radius + img 的 object-fit: cover 裁切 -->
+      <span class="brand-mark brand-avatar" aria-hidden="true">
+        <img src="assets/brand-avatar.png?v=20261101" alt="">
       </span>
       <span class="brand-text">
-        <strong id="brandTitle">Deus</strong>
-        <small id="brandSub">个人知识博客</small>
+        <strong id="brandTitle">Deus's Blog</strong>
       </span>
     </a>
+    <div class="npager" id="navPager" hidden>
+      <button type="button" class="np-btn" id="npPrev" aria-label="上一页" title="上一页">&lsaquo;</button>
+      <button type="button" class="np-btn" id="npNext" aria-label="下一页" title="下一页">&rsaquo;</button>
+    </div>
+    </div>
 
     <nav class="topnav" id="topnav">
       <a href="#/" data-nav="home">首页</a>
-      <a href="#/archive" data-nav="archive">归档</a>
-      <a href="#/tags" data-nav="tags">标签</a>
-      
-    <a href="javascript:void(0)" id="navFeedback" data-nav="feedback">反馈</a>
+      <a href="#/notes" data-nav="notes">笔记库</a>
+      <a href="javascript:void(0)" id="navFeedback" data-nav="feedback">反馈</a>
     </nav>
 
     <div class="topbar-actions">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="打开导航菜单">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"/></svg>
+      </button>
+      <a class="gh-link" href="https://github.com/deus-088" target="_blank" rel="noopener noreferrer" aria-label="GitHub 主页" title="GitHub">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>GitHub</span>
+      </a>
       <button class="icon-btn toc-btn" id="tocBtn" aria-label="目录" title="目录" hidden><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M3 6h.01M3 12h.01M3 18h.01" stroke-width="3"/></svg></button>
       <button class="icon-btn" id="searchToggle" aria-label="搜索">
         <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       </button>
       <button class="icon-btn" id="themeToggle" aria-label="切换主题">
-        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
       </button>
     </div>
   </div>
 </header>
 <div class="site-notice" id="siteNotice" role="status"><span class="sn-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h13a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span><span class="sn-t"><b>维护通知：</b>站点持续更新中......预计10.18 18:00前推送最后一轮，请以最终状态为准</span><button class="sn-x" type="button" aria-label="关闭通知">&times;</button></div>
 
+<section class="hero" id="homeHero" hidden aria-label="站点介绍">
+  <div class="stage" id="hhStage" aria-hidden="true">
+    <div class="band">
+      <div class="band-layer wm-glow"><div class="track" data-hh-track><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span></div></div>
+      <div class="band-layer wm-blur"><div class="track" data-hh-track><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span></div></div>
+    </div>
+    <div class="ball" id="hhBall">
+      <div class="ball-clip"><canvas id="hhCanvas"></canvas></div>
+      <div class="ball-rim"></div>
+      <div class="ball-ca"></div>
+      <div class="ball-glare"></div>
+    </div>
+    <div class="beam" id="hhBeam"><div class="beam-spin"></div></div>
+  </div>
+
+  <div class="hero-in">
+    <div class="hero-copy" id="hhCopy">
+      <p class="eyebrow hh-rv">Personal Security Notes</p>
+      <h1 class="hh-rv" id="hhTitle">A Knowledge Base and Blog <em>——By Deus</em></h1>
+      <p class="sub hh-rv" id="hhSub"></p>
+      <form class="search hh-rv" id="hhSearchForm" role="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+        <input type="search" id="heroSearch" placeholder="搜索笔记：SQL 注入、XSS…" aria-label="搜索笔记" autocomplete="off">
+        <kbd>/</kbd>
+        <button class="go" type="submit" aria-label="搜索">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+      <div class="cta hh-rv">
+        <a class="btn btn-primary" href="#/notes">浏览全部笔记
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="javascript:void(0)" data-scroll-cats>按分类查找</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint" aria-hidden="true"><span>Scroll</span><i></i></div>
+</section>
+
 <div class="layout">
   <aside class="sidebar" id="sidebar">
 <div class="drawer-grip" aria-hidden="true"></div>
-<ul class="side-list mobile-feedback" style="margin:0 0 12px">
+<ul class="side-list mobile-feedback" id="drawerNav" style="margin:0 0 12px">
+<li><a href="#/" data-nav="home">首页</a></li>
+<li><a href="#/notes" data-nav="notes">笔记库</a></li>
 <li><a href="javascript:void(0)" id="mobileFeedback" data-nav="feedback" style="font-weight:600">反馈</a></li>
 </ul>
     <div class="side-block">
@@ -102,15 +149,19 @@
       <div class="search-hint" id="searchHint" hidden></div>
     </div>
 
-    <div class="side-block" id="sideCategories">
-      <h4>分类</h4>
-      <ul class="side-list" id="categoryList"></ul>
+    <div class="side-block" id="sideTree">
+      <h4>本站总目录</h4>
+      <!-- 三级树：分类 → 二级菜单 → 笔记。二级菜单来自笔记的 subcategory 字段，
+           由作者在管理端自行填写，构建脚本不做自动归类。
+           只有这块滚动，下方「笔记库」固定不动；滚动条由 app.js 在滚动时淡入。 -->
+      <div class="tree-scroll-wrap">
+        <div class="tree-scroll" id="treeScroll">
+          <ul class="side-tree" id="categoryList"></ul>
+        </div>
+        <span class="tree-scrollbar" id="treeScrollbar" aria-hidden="true"></span>
+      </div>
     </div>
 
-    <div class="side-block" id="sideTags">
-      <h4>标签</h4>
-      <div class="tag-cloud" id="tagCloud"></div>
-    </div>
 
     <div class="side-block side-stats" id="sideStats">
       <h4>笔记库</h4>
@@ -131,6 +182,7 @@
   <div class="footer-inner">
     <span id="footerText"></span>
     <span class="dot"></span>
+    <span id="footerBuild">Built with python build.py</span>
   </div>
 </footer>
 
@@ -144,7 +196,7 @@
      用 ?t=时间戳 强制每次都重新拉；第一次加载完成后才启动 app.js。 -->
 <script>
 (function boot(){
-  var V = '?v=20261017n';
+  var V = '?v=20261101a';
   var SOURCES = ['data/notes.js', 'assets/js/app.js'];
   var i = 0;
   function next(){
@@ -159,10 +211,11 @@
   next();
 })();
 </script>
-<script src="assets/js/liquid.js?v=20261017n"></script>
-<script src="assets/js/feedback.js?v=20261017n"></script>
-<script src="assets/js/sync-notice.js?v=20261017n"></script>
+<script src="assets/js/home.js?v=20261101a"></script>
+<script src="assets/js/liquid.js?v=20261101a"></script>
+<script src="assets/js/feedback.js?v=20261101a"></script>
+<script src="assets/js/sync-notice.js?v=20261101a"></script>
 <script>(function(){var b=document.getElementById("siteNotice");if(!b)return;var x=b.querySelector(".sn-x");if(x)x.addEventListener("click",function(){sessionStorage.setItem("secnot_notice_closed","1");b.remove();});})();</script>
-<div class="toc-drawer" id="tocDrawer" aria-hidden="true"><div class="drawer-grip" aria-hidden="true"></div><div class="toc-drawer-head"><span>目录</span><button type="button" class="icon-btn" id="tocClose" aria-label="关闭目录">&times;</button></div><nav class="toc" id="tocMobile"></nav></div>
+<div class="toc-drawer" id="tocDrawer" aria-hidden="true"><div class="drawer-grip" aria-hidden="true"></div><div class="toc-drawer-head"><span>本篇目录</span><button type="button" class="icon-btn" id="tocClose" aria-label="关闭目录">&times;</button></div><nav class="toc" id="tocMobile"></nav></div>
 </body>
 </html>

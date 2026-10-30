@@ -39,7 +39,11 @@
     q: '',
     theme: store.get('sec-theme') || CONFIG.defaultTheme || 'dark',
     observer: null,
-    shown: 0          // 首页当前已展示的笔记条数（分页用）
+    shown: 0,         // 首页当前已展示的笔记条数（分页用）
+    /* 目录树与归档的展开记忆：用户手动切换优先于「当前路由自动展开」 */
+    openCats: {},
+    openSubs: {},
+    openMonths: {}
   };
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -96,12 +100,6 @@
   }
 
   function fmtNum(n) { return Number(n || 0).toLocaleString('zh-CN'); }
-
-  /* 每页条数：读取 blog.config.json 的 pageSize，非法值回退到 8 */
-  function pageSize() {
-    var n = parseInt(CONFIG.pageSize, 10);
-    return (isNaN(n) || n < 1) ? 8 : n;
-  }
 
   /* ------------------------------------------------------------
      Markdown 渲染器按需加载
@@ -200,8 +198,11 @@
     if (!parts.length) return { name: 'home' };
     var head = parts[0];
     if (head === 'note') return { name: 'note', slug: parts.slice(1).join('/') };
-    if (head === 'category') return { name: 'home', category: parts.slice(1).join('/') };
-    if (head === 'tag') return { name: 'home', tag: parts.slice(1).join('/') };
+    /* 笔记库是独立视图：首页只放舞台与精选，全量列表在 #/notes。
+       分类 / 标签筛选属于「库」而不是「首页」，因此都归到 notes。 */
+    if (head === 'notes') return { name: 'notes' };
+    if (head === 'category') return { name: 'notes', category: parts.slice(1).join('/') };
+    if (head === 'tag') return { name: 'notes', tag: parts.slice(1).join('/') };
     if (head === 'archive' || head === 'tags' ) return { name: head };
     return { name: 'home' };
   }
@@ -209,6 +210,63 @@
   function go(hash) {
     if (location.hash === hash) render();
     else location.hash = hash;
+  }
+
+  /* ------------------------------------------------------------
+     库内翻页（顶栏 ‹ ›）
+     只在「笔记库上下文」里维护一条访问轨迹：笔记库 / 分类 / 标签 /
+     归档 / 文章。轨迹的起点就是用户进入时的页面，最多退到 #/notes，
+     永远不含站点首页——这是需求里「不能返回首页」的落点。
+     ------------------------------------------------------------ */
+  var trail = { list: [], i: -1 };
+
+  function isLibRoute(r) {
+    return r.name === 'notes' || r.name === 'note' ||
+      r.name === 'archive' || r.name === 'tags';
+  }
+
+  function recordTrail(r) {
+    if (!isLibRoute(r)) { trail.list = []; trail.i = -1; return; }
+    var h = location.hash || '#/';
+    if (trail.list[trail.i] === h) return;
+    trail.list = trail.list.slice(0, trail.i + 1);
+    trail.list.push(h);
+    trail.i = trail.list.length - 1;
+  }
+
+  function pagerStep(dir) {
+    if (!trail.list.length) return;
+    var next = trail.i + dir;
+    if (next < 0) {
+      /* 退到头就停在笔记库，不回到首页 */
+      if (location.hash !== '#/notes') location.hash = '#/notes';
+      else render();
+      return;
+    }
+    if (next > trail.list.length - 1) return;
+    trail.i = next;
+    var h = trail.list[next];
+    if (h === (location.hash || '#/')) render();
+    else location.hash = h;
+  }
+
+  function syncPager(r) {
+    var box = $('#navPager');
+    if (!box) return;
+    var lib = isLibRoute(r);
+    box.hidden = !lib;
+    if (!lib) return;
+    var prev = $('#npPrev');
+    var next = $('#npNext');
+    if (prev) prev.disabled = trail.i <= 0 && location.hash === '#/notes';
+    if (next) next.disabled = trail.i >= trail.list.length - 1;
+  }
+
+  function bindPager() {
+    var prev = $('#npPrev');
+    var next = $('#npNext');
+    if (prev) prev.addEventListener('click', function () { pagerStep(-1); });
+    if (next) next.addEventListener('click', function () { pagerStep(1); });
   }
 
   /* ------------------------------------------------------------
@@ -239,41 +297,102 @@
      视图：主页
      ------------------------------------------------------------ */
   function noteCard(n, q) {
-    var tags = (n.tags || []).slice(0, 4).map(function (t) {
+    /* 三列网格：元信息拆成顶部（分类/日期）与底部（标签/字数）两段，
+       中间留给标题与摘要；卡片高度由 min-height + flex 撑齐。 */
+    var tags = (n.tags || []).slice(0, 3).map(function (t) {
       return '<span>' + esc(t) + '</span>';
     }).join('');
 
     return '' +
       '<a class="note-card animate" href="#/note/' + encodeURIComponent(n.slug) + '">' +
+        '<div class="card-top">' +
+          '<span class="cat">' + esc(n.category) + '</span>' +
+          '<span class="date">' + fmtDate(n.date) + '</span>' +
+        '</div>' +
         '<h3>' + hl(n.title, q) + '</h3>' +
         '<p>' + hl(n.summary, q) + '</p>' +
-        '<div class="note-meta">' +
-          '<span class="cat">' + esc(n.category) + '</span>' +
-          '<span>' + fmtDate(n.date) + '</span>' +
-          '<span>' + n.reading_time + ' 分钟</span>' +
-          '<span>' + fmtNum(n.words) + ' 字</span>' +
-          (tags ? '<span class="tags">' + tags + '</span>' : '') +
+        '<div class="card-foot">' +
+          (tags ? '<div class="tags">' + tags + '</div>' : '') +
+          '<span class="words">' + fmtNum(n.words) + ' 字 · ' + n.reading_time + ' 分钟</span>' +
         '</div>' +
       '</a>';
   }
 
-  function viewHome(route) {
+  /* ------------------------------------------------------------
+     视图：首页（#/）—— 设计稿第二屏：通栏统计 / 最新 3 篇 / 分类入口
+     首屏舞台（.hero）是 index.html 里的静态结构，不在这里生成
+     ------------------------------------------------------------ */
+  function viewHome() {
+    var list = filtered({});
+    var cats = (DB.categories || []).map(function (c) {
+      return '<a href="#/category/' + encodeURIComponent(c[0]) + '">' +
+        esc(c[0]) + ' <b>' + c[1] + '</b></a>';
+    }).join('');
+
+    var cards = list.slice(0, 3).map(function (n) {
+      var tags = (n.tags || []).slice(0, 3).map(function (t) {
+        return '<i>' + esc(t) + '</i>';
+      }).join('');
+      return '<a class="card" href="#/note/' + encodeURIComponent(n.slug) + '">' +
+        '<div class="meta"><span class="cat">' + esc(n.category) + '</span>' +
+          '<span>' + fmtDate(n.date) + '</span></div>' +
+        '<h3>' + esc(n.title) + '</h3>' +
+        '<p>' + esc(n.summary) + '</p>' +
+        (tags ? '<div class="tags">' + tags + '</div>' : '') +
+      '</a>';
+    }).join('');
+
+    state.shown = list.length;
+
+    /* 数字先落 0，由 playCountUp() 滚到 data-count-to。
+       JS 关闭时页面本来也不渲染，所以不必留最终值兜底。 */
+    var statCell = function (val, label, useNum) {
+      return '<div><b data-count-to="' + val + '"' +
+        (useNum ? ' data-count-fmt="num"' : '') + '>0</b><span>' + label + '</span></div>';
+    };
+
+    return (
+      /* 统计条是通栏的，故意放在 .wrap 之外（与设计稿一致） */
+      '<div class="stats">' +
+        statCell(DB.stats.notes || 0, '篇笔记') +
+        statCell((DB.categories || []).length, '个分类') +
+        statCell((DB.tags || []).length, '个标签') +
+        statCell(DB.stats.words || 0, '总字数', true) +
+      '</div>' +
+      '<div class="wrap">' +
+        '<section class="section">' +
+          '<div class="sec-head"><h2>最新笔记</h2><span>按更新时间排序</span>' +
+            '<a href="#/archive">查看归档 →</a></div>' +
+          '<div class="cards">' + cards + '</div>' +
+        '</section>' +
+        '<section class="section" id="hsCats">' +
+          '<div class="sec-head"><h2>按分类浏览</h2>' +
+            '<span>' + (DB.categories || []).length + ' 个分类</span></div>' +
+          '<div class="cats">' + cats + '</div>' +
+        '</section>' +
+      '</div>'
+    );
+  }
+
+  /* ------------------------------------------------------------
+     视图：笔记库（#/notes）—— 沿用旧版：hero 卡片 + 全量卡片列表
+     分类 / 标签 / 搜索（#/category/:x、#/tag/:x、state.q）都落在这个视图
+     ------------------------------------------------------------ */
+  function viewNotes(route) {
     var list = filtered(route);
     var q = state.q;
     var parts = [];
 
-    var isFiltered = !!(route.category || route.tag || q);
-
-    if (!isFiltered) {
+    if (!route.category && !route.tag && !q) {
       parts.push(
         '<section class="hero animate">' +
-          '<h1>' + esc(CONFIG.title) + ' · <em>' + esc(CONFIG.subtitle) + '</em></h1>' +
-          '<p>' + esc(CONFIG.description || '') + '</p>' +
-          '<div class="hero-meta">' +
-            '<span class="chip">' + DB.stats.notes + ' 篇笔记</span>' +
-            '<span class="chip">' + (DB.categories || []).length + ' 个分类</span>' +
-            '<span class="chip">' + (DB.tags || []).length + ' 个标签</span>' +
-            '<span class="chip">' + fmtNum(DB.stats.words) + ' 字</span>' +
+          '<div class="hero-inner">' +
+            '<h1>' + esc(CONFIG.title) + ' · <em>' + esc(CONFIG.subtitle) + '</em></h1>' +
+            '<p>' + esc(CONFIG.description || '') + '</p>' +
+            '<div class="hero-actions">' +
+              '<a class="btn btn-primary" href="#/archive">按时间归档</a>' +
+              '<a class="btn btn-ghost" href="#/tags">按标签浏览</a>' +
+            '</div>' +
           '</div>' +
         '</section>'
       );
@@ -307,80 +426,75 @@
         '</div>'
       );
     } else {
-      var size = pageSize();
-      state.shown = Math.min(size, list.length);
-      var visible = list.slice(0, state.shown);
+      /* 一次渲染全部：本规模下一次 DOM 构建完全够用，分页反而多一层操作 */
+      state.shown = list.length;
       parts.push('<div class="note-list" id="noteList">' +
-        visible.map(function (n) { return noteCard(n, q); }).join('') + '</div>');
-      parts.push(loadMoreBar(list.length, state.shown));
+        list.map(function (n) { return noteCard(n, q); }).join('') + '</div>');
     }
 
     return parts.join('');
   }
 
-  /* 分页控件：仅在还有未展示的笔记时渲染 */
-  function loadMoreBar(total, shown) {
-    if (total <= shown) return '';
-    return '<div class="load-more-wrap" id="loadMoreWrap">' +
-      '<button type="button" class="load-more" data-load-more>加载更多</button>' +
-      '<span class="load-more-hint">已显示 ' + shown + ' / ' + total + ' 篇，' +
-      '剩余 ' + (total - shown) + ' 篇</span>' +
-    '</div>';
-  }
-
-  /* 追加下一页内容，不整页重渲染，避免阅读位置跳动 */
-  function loadMore() {
-    var route = parseRoute();
-    var list = filtered(route);
-    var host = $('#noteList');
-    if (!host) return;
-
-    var next = list.slice(state.shown, state.shown + pageSize());
-    if (!next.length) return;
-
-    var box = document.createElement('div');
-    box.innerHTML = next.map(function (n) { return noteCard(n, state.q); }).join('');
-    while (box.firstChild) host.appendChild(box.firstChild);
-    state.shown += next.length;
-
-    var wrap = $('#loadMoreWrap');
-    if (state.shown >= list.length) {
-      if (wrap) wrap.remove();
-    } else if (wrap) {
-      wrap.querySelector('.load-more-hint').textContent =
-        '已显示 ' + state.shown + ' / ' + list.length + ' 篇，剩余 ' + (list.length - state.shown) + ' 篇';
-    }
-  }
-
   /* ------------------------------------------------------------
      视图：归档
      ------------------------------------------------------------ */
+  var CARET_SVG = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" ' +
+    'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+
   function viewArchive() {
     if (!NOTES.length) return '<div class="empty"><b>暂无笔记</b></div>';
 
+    /* 年 → 月 → 日 三级：年、月只做分组，具体条目点开月份才出现 */
     var sorted = NOTES.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
-    var groups = {};
+    var years = {};
     sorted.forEach(function (n) {
-      var y = String(n.date).slice(0, 4);
-      (groups[y] = groups[y] || []).push(n);
+      var d = String(n.date);
+      var y = d.slice(0, 4);
+      var m = d.slice(5, 7);
+      var yg = years[y] = years[y] || { count: 0, months: {} };
+      yg.count++;
+      (yg.months[m] = yg.months[m] || []).push(n);
     });
 
     var out = ['<div class="list-head animate"><h2>归档 <span class="badge">' + NOTES.length + '</span></h2></div>'];
 
-    Object.keys(groups).sort(function (a, b) { return b - a; }).forEach(function (y) {
+    Object.keys(years).sort(function (a, b) { return b - a; }).forEach(function (y) {
+      var yg = years[y];
+      var months = Object.keys(yg.months).sort(function (a, b) { return b - a; });
+
       out.push(
-        '<div class="archive-year animate">' +
-          '<div class="year-title">' + y + '<span style="font-size:12px;color:var(--muted-2)">' +
-          groups[y].length + ' 篇</span></div>' +
-          groups[y].map(function (n) {
-            return '<a class="arch-item" href="#/note/' + encodeURIComponent(n.slug) + '">' +
-              '<time>' + fmtDate(n.date).slice(5) + '</time>' +
-              '<span class="t">' + esc(n.title) + '</span>' +
-              '<span class="c">' + esc(n.category) + '</span>' +
-            '</a>';
-          }).join('') +
-        '</div>'
+        '<section class="archive-year animate">' +
+          '<div class="year-title">' + y +
+            '<span class="year-count">' + yg.count + ' 篇 · ' + months.length + ' 个月</span>' +
+          '</div>'
       );
+
+      months.forEach(function (m) {
+        var key = y + '-' + m;
+        var list = yg.months[m];
+        var open = state.openMonths[key] === true;
+        out.push(
+          '<div class="arch-month' + (open ? ' is-open' : '') + '" data-month="' + key + '">' +
+            '<button class="arch-month-head" type="button" data-toggle-month="' + key + '" ' +
+              'aria-expanded="' + open + '" aria-controls="arch-' + key + '">' +
+              '<span class="arch-caret">' + CARET_SVG + '</span>' +
+              '<span class="arch-m">' + Number(m) + ' 月</span>' +
+              '<span class="arch-count">' + list.length + ' 篇</span>' +
+            '</button>' +
+            '<div class="arch-items" id="arch-' + key + '">' +
+              list.map(function (n) {
+                return '<a class="arch-item" href="#/note/' + encodeURIComponent(n.slug) + '">' +
+                  '<time datetime="' + escAttr(n.date) + '">' + fmtDate(n.date).slice(8) + '</time>' +
+                  '<span class="t">' + esc(n.title) + '</span>' +
+                  '<span class="c">' + esc(n.category) + '</span>' +
+                '</a>';
+              }).join('') +
+            '</div>' +
+          '</div>'
+        );
+      });
+
+      out.push('</section>');
     });
 
     return out.join('');
@@ -431,7 +545,7 @@
     var items = headings.filter(function (h) { return h.level >= 2 && h.level <= 4; });
     if (items.length < 2) { host.innerHTML = ''; return; }
 
-    host.innerHTML = '<h5>目录</h5><ul>' + items.map(function (h) {
+    host.innerHTML = '<h5>本篇目录</h5><ul>' + items.map(function (h) {
       return '<li class="lvl-' + h.level + '"><a href="#' + escAttr(h.id) + '" data-toc="' + escAttr(h.id) + '">' +
         esc(h.text) + '</a></li>';
     }).join('') + '</ul>';
@@ -563,7 +677,7 @@
     var head =
       '<div class="post-header">' +
         '<div class="crumbs">' +
-          '<a href="#/">首页</a><span class="sep">/</span>' +
+          '<a href="#/notes">笔记库</a><span class="sep">/</span>' +
           '<a href="#/category/' + encodeURIComponent(n.category) + '">' + esc(n.category) + '</a>' +
           '<span class="sep">/</span><span>' + esc(n.title) + '</span>' +
         '</div>' +
@@ -599,12 +713,153 @@
   }
 
   /* ------------------------------------------------------------
+     页面转场：首页 ↔ 笔记库
+     要求是「旧页淡出的同时新页淡入，两页都在屏幕上」，顺序式的
+     先出后进会闪一帧黑屏。这里交给浏览器原生的 View Transitions：
+     它在切换瞬间同时生成旧页与新页两张快照，再做交叉动画，
+     天然没有空档；导航栏单独命名成一组，保持不动。
+     不支持该 API 的浏览器直接换页（不做假动画）。
+     ------------------------------------------------------------ */
+  /* __NO_PAGE_ANIM__ 供自动化测试关掉转场：jsdom 里 render() 会被延后，
+     断言拿到的还是旧 DOM；真实浏览器不受影响 */
+  var reduceMotion = !!(window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var pageVT = false;
+  var lastKind = '';
+
+  function clearPgDir() {
+    document.documentElement.removeAttribute('data-pgdir');
+    /* 底色补间只在转场期间生效，平时切主题仍走液态层的圆形扩散 */
+    setTimeout(function () { document.body.classList.remove('vt-bg'); }, 600);
+    pageVT = false;
+  }
+
+  function startPageTransition(dir, apply) {
+    var root = document.documentElement;
+    root.setAttribute('data-pgdir', dir > 0 ? 'fwd' : 'back');
+    /* 首页恒为深色、笔记库跟主题走：浅色主题下往返就是黑↔白，
+       给 body 一段 background-color 补间，底色不会在换页瞬间跳变 */
+    document.body.classList.add('vt-bg');
+    pageVT = true;
+    try {
+      var vt = document.startViewTransition(function () {
+        window.scrollTo(0, 0);
+        apply();
+      });
+      if (vt && vt.finished && vt.finished.then) vt.finished.then(clearPgDir, clearPgDir);
+      else setTimeout(clearPgDir, 600);
+    } catch (e) {
+      clearPgDir();
+      apply();
+    }
+  }
+
+  /* ------------------------------------------------------------
+     数字滚动（Count Up）
+     目标值写在 data-count-to，data-count-fmt="num" 时带千分位；
+     两处统计都用它：首页第二屏的 .stats，笔记库侧栏的 #sideStats。
+     ------------------------------------------------------------ */
+  function countUpEl(el, dur) {
+    var to = parseFloat(el.getAttribute('data-count-to'));
+    if (!isFinite(to)) return;
+    var useNum = el.getAttribute('data-count-fmt') === 'num';
+    var paint = function (v) {
+      el.textContent = useNum ? fmtNum(Math.round(v)) : String(Math.round(v));
+    };
+    /* 无障碍：系统要求减少动态，或自动化测试要求关动画时，直接落终值 */
+    if (reduceMotion || window.__NO_PAGE_ANIM__) { paint(to); return; }
+    var start = 0;
+    var step = function (now) {
+      if (!start) start = now;
+      if (!el.isConnected) return;
+      var p = Math.min(1, (now - start) / dur);
+      /* easeOutCubic：第一帧就开始动（easeInOut 前 300ms 几乎不动，会被当成卡顿），
+         尾段拉得长，所以整体仍然显得慢 */
+      var e = 1 - Math.pow(1 - p, 3);
+      paint(to * e);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    paint(0);
+    requestAnimationFrame(step);
+  }
+
+  function playCountUp(sel, delay) {
+    var nodes = document.querySelectorAll(sel);
+    if (!nodes.length) return;
+
+    var roll = function () {
+      /* 先把四个数字统一归零：侧栏那组在 buildSidebar 里已经写成终值，
+         不归零的话「还没轮到」的那几个会先显示终值再跳回 0，露馅。 */
+      for (var j = 0; j < nodes.length; j++) nodes[j].textContent = '0';
+      for (var i = 0; i < nodes.length; i++) {
+        (function (el, i) {
+          /* 四个数字依次起步，滚动过程才看得清 */
+          setTimeout(function () { if (el.isConnected) countUpEl(el, 2200); }, delay + i * 120);
+        })(nodes[i], i);
+      }
+    };
+
+    if (reduceMotion || window.__NO_PAGE_ANIM__) {
+      for (var k = 0; k < nodes.length; k++) countUpEl(nodes[k], 0);
+      return;
+    }
+    /* 数字滚到眼前才有意义：首页统计条在首屏之下，等它进入视口再起步
+       （否则动画在屏幕外播完，滚下去只剩一堆静态数字）。 */
+    if (!window.IntersectionObserver) { roll(); return; }
+    var fired = false;
+    var io = new IntersectionObserver(function (entries) {
+      if (fired) return;
+      for (var i = 0; i < entries.length; i++) {
+        if (!entries[i].isIntersecting) continue;
+        fired = true;
+        io.disconnect();
+        roll();
+        return;
+      }
+    }, { threshold: 0 });   /* 哪怕只露出 1px 也立刻起步，别等 1/4 可见 */
+    for (var n = 0; n < nodes.length; n++) io.observe(nodes[n]);
+  }
+
+  /* ------------------------------------------------------------
      渲染入口
      ------------------------------------------------------------ */
   function render() {
     var route = parseRoute();
+    var kindIsHome = route.name === 'home' && !state.q;
+    var kind = kindIsHome ? 'home' : (isLibRoute(route) ? 'lib' : 'other');
+    var dir = 0;
+    if (lastKind === 'home' && kind === 'lib') dir = 1;
+    else if (lastKind === 'lib' && kind === 'home') dir = -1;
+    lastKind = kind;
+
+    if (dir && !reduceMotion && !window.__NO_PAGE_ANIM__ && document.startViewTransition) {
+      startPageTransition(dir, renderNow);
+      return;
+    }
+    renderNow();
+  }
+
+  function renderNow() {
+    var route = parseRoute();
     var app = $('#app');
     if (!app) return;
+
+    recordTrail(route);
+
+    /* 首页舞台只在「未筛选的首页」出现；其余路由收起。
+       body.is-home 关掉后侧栏回到内页形态，body.is-notes 只给笔记库换页脚底色。 */
+    var isHome = route.name === 'home' && !state.q;
+    document.body.classList.toggle('is-home', isHome);
+    /* 沿用旧版式的「库」内页面：笔记库 / 归档 / 标签 / 文章。
+       它们共用同一条纯黑页脚，底部和新首页对齐，不会进一次文章就变回灰底。 */
+    var isNotesCtx = route.name === 'notes' || route.name === 'note' ||
+      route.name === 'archive' || route.name === 'tags';
+    document.body.classList.toggle('is-notes', isNotesCtx);
+    /* 回到首页就复位，下次再进库时侧栏数字重新滚一次 */
+    if (!isNotesCtx) state.statPlayed = false;
+    var heroEl = $('#homeHero');
+    if (heroEl) heroEl.hidden = !isHome;
+    if (window.HomeHero) window.HomeHero.setActive(isHome);
 
     /* 文章页依赖渲染器：未就绪时先排队，加载完成后重跑本函数；
        失败（state = -1）则继续往下走，由 viewPost 的 <pre> 分支兜底。 */
@@ -617,13 +872,26 @@
 
     var note = route.name === 'note' ? findNote(route.slug) : null;
 
+    /* 首页出现搜索结果时，落到笔记库视图（舞台没有结果区，也不该有） */
+    var isNotesView = route.name === 'notes' || (route.name === 'home' && !!state.q);
+
     var html;
     if (route.name === 'note') html = viewPost(route, note);
     else if (route.name === 'archive') html = viewArchive();
     else if (route.name === 'tags') html = viewTags();
-        else html = viewHome(route);
+    else if (isNotesView) html = viewNotes(route);
+    else html = viewHome();
 
     app.innerHTML = html;
+
+    /* 数字滚动：首页统计条每次进来都重播；侧栏统计每进一次「库」播一次。
+       有转场时压后到淡入差不多完成，否则用户看到的是被快照定格的 0。 */
+    var countDelay = pageVT ? 520 : 0;
+    if (isHome) playCountUp('#app .stats b', countDelay);
+    if (isNotesCtx && !state.statPlayed) {
+      state.statPlayed = true;
+      playCountUp('#sideStats b', countDelay);
+    }
 
     if (route.name === 'note' && note) {
       var body = $('#postBody');
@@ -648,6 +916,7 @@
     }
 
     syncActive(route);
+    syncPager(route);
     measureProgress();
     syncProgress();
 
@@ -656,18 +925,22 @@
   }
 
   function syncActive(route) {
-    $$('.topnav a').forEach(function (a) {
+    /* 顶栏三项：首页 / 笔记库 / 反馈。
+       归档、标签、分类、标签筛选都算「在库里」，统一高亮笔记库。 */
+    var homeOn = route.name === 'home' && !state.q;
+    var notesOn = route.name === 'notes' || route.name === 'note' ||
+      route.name === 'archive' || route.name === 'tags';
+    $$('.topnav a, #drawerNav a').forEach(function (a) {
       var key = a.getAttribute('data-nav');
-      var on = (key === 'home' && route.name === 'home' && !route.category && !route.tag) ||
-        (key === route.name);
+      var on = key === 'home' ? homeOn
+        : key === 'notes' ? notesOn
+        : key === 'feedback' ? false
+        : key === route.name;
       a.classList.toggle('active', !!on);
     });
 
-    $$('#categoryList a').forEach(function (a) {
-      a.classList.toggle('active', a.getAttribute('data-category') === route.category);
-    });
-    $$('#tagCloud a').forEach(function (a) {
-      a.classList.toggle('active', a.getAttribute('data-tag') === route.tag);
+    $$('#categoryList a[data-category]').forEach(function (a) {
+      a.classList.toggle('active', a.getAttribute('data-category') === (route.category || ''));
     });
   }
 
@@ -711,36 +984,219 @@
   /* ------------------------------------------------------------
      侧边栏构建
      ------------------------------------------------------------ */
+  /* 目录树的数据：分类（一级）→ 二级菜单（二级）→ 笔记（三级）。
+     二级菜单来自笔记 front-matter 的 subcategory 字段，由作者在管理端填写，
+     这里不做任何自动归类；没填的笔记直接挂在分类下面。
+     标签不再参与这棵树，改为侧栏的独立分支。 */
+  function menuTree() {
+    var byCat = {};
+    NOTES.forEach(function (n) {
+      var c = n.category || '未分类';
+      (byCat[c] = byCat[c] || []).push(n);
+    });
+
+    var byDate = function (a, b) { return a.date < b.date ? 1 : -1; };
+    var cats = (DB.categories || []).map(function (c) { return c[0]; })
+      .filter(function (c) { return !!byCat[c]; });
+    Object.keys(byCat).forEach(function (c) { if (cats.indexOf(c) < 0) cats.push(c); });
+
+    return cats.map(function (c) {
+      var subs = {};
+      var loose = [];
+      byCat[c].forEach(function (n) {
+        var sub = String(n.subcategory || '').trim();
+        if (sub) (subs[sub] = subs[sub] || []).push(n);
+        else loose.push(n);
+      });
+      var groups = Object.keys(subs).sort(function (a, b) {
+        return subs[b].length - subs[a].length || a.localeCompare(b, 'zh');
+      }).map(function (sub) {
+        return { sub: sub, notes: subs[sub].slice().sort(byDate) };
+      });
+      return { cat: c, count: byCat[c].length, groups: groups, loose: loose.sort(byDate) };
+    });
+  }
+
   function buildSidebar() {
     var catList = $('#categoryList');
     if (catList) {
-      var total = '<li><a href="#/" data-category="" style="' + ('' ) + '">' +
-        '<span>全部</span><span class="count">' + NOTES.length + '</span></a></li>';
-      catList.innerHTML = total + (DB.categories || []).map(function (c) {
-        return '<li><a href="#/category/' + encodeURIComponent(c[0]) + '" data-category="' + escAttr(c[0]) + '">' +
-          '<span>' + esc(c[0]) + '</span><span class="count">' + c[1] + '</span></a></li>';
-      }).join('');
-    }
+      var route = parseRoute();
+      var out = ['<li class="tree-root"><a class="tree-row lv0" href="#/notes" data-category="">' +
+        '<span class="tree-label">全部笔记</span><span class="count">' + NOTES.length + '</span></a></li>'];
 
-    var cloud = $('#tagCloud');
-    if (cloud) {
-      cloud.innerHTML = (DB.tags || []).map(function (t) {
-        return '<a class="tag" href="#/tag/' + encodeURIComponent(t[0]) + '" data-tag="' + escAttr(t[0]) + '">' +
-          esc(t[0]) + '<i>' + t[1] + '</i></a>';
-      }).join('') || '<span style="font-size:13px;color:var(--muted-2)">暂无标签</span>';
+      menuTree().forEach(function (g) {
+        var open = state.openCats[g.cat] !== undefined
+          ? state.openCats[g.cat] : (route.category === g.cat);
+        var sub = [];
+
+        g.groups.forEach(function (grp) {
+          var subOpen = state.openSubs[g.cat + '/' + grp.sub] !== undefined
+            ? state.openSubs[g.cat + '/' + grp.sub] : false;
+          sub.push(
+            '<li class="tree-group' + (subOpen ? ' is-open' : '') + '">' +
+              '<button class="tree-row lv2 tree-group-head" type="button" data-toggle-sub="' +
+                escAttr(g.cat + '/' + grp.sub) + '" aria-expanded="' + subOpen + '">' +
+                '<span class="tree-caret">' + CARET_SVG + '</span>' +
+                '<span class="tree-label">' + esc(grp.sub) + '</span>' +
+                '<span class="count">' + grp.notes.length + '</span>' +
+              '</button>' +
+              '<ul class="tree-sub">' +
+                grp.notes.map(function (n) {
+                  return '<li><a class="tree-note" title="' + escAttr(n.title) + '" href="#/note/' +
+                    encodeURIComponent(n.slug) + '">' + esc(n.title) + '</a></li>';
+                }).join('') +
+              '</ul>' +
+            '</li>'
+          );
+        });
+
+        /* 没填二级菜单的笔记：跟在二级菜单后面，用一条虚线隔开，避免被误读成上一组的成员 */
+        g.loose.forEach(function (n, i) {
+          sub.push('<li' + (i === 0 ? ' class="is-loose-first"' : '') + '>' +
+            '<a class="tree-note is-loose" title="' + escAttr(n.title) + '" href="#/note/' +
+            encodeURIComponent(n.slug) + '">' + esc(n.title) + '</a></li>');
+        });
+
+        out.push(
+          '<li class="tree-cat' + (open ? ' is-open' : '') + '">' +
+            '<div class="tree-row lv1">' +
+              '<button class="tree-toggle" type="button" data-toggle-cat="' + escAttr(g.cat) + '" ' +
+                'aria-expanded="' + open + '" aria-label="展开分类 ' + escAttr(g.cat) + '">' + CARET_SVG + '</button>' +
+              '<a class="tree-label" href="#/category/' + encodeURIComponent(g.cat) + '" data-category="' +
+                escAttr(g.cat) + '">' + esc(g.cat) + '</a>' +
+              '<span class="count">' + g.count + '</span>' +
+            '</div>' +
+            '<ul class="tree-sub">' + sub.join('') + '</ul>' +
+          '</li>'
+        );
+      });
+
+      catList.innerHTML = out.join('');
     }
 
     var set = function (id, val) { var el = $(id); if (el) el.textContent = val; };
-    set('#statNotes', DB.stats.notes || 0);
-    set('#statCats', (DB.categories || []).length);
-    set('#statTags', (DB.tags || []).length);
-    set('#statWords', fmtNum(DB.stats.words));
+    /* 侧栏四个数字同时登记滚动目标：data-count-to 是数值，文本是它的展示形态 */
+    var setStat = function (id, val, fmt) {
+      var el = $(id);
+      if (!el) return;
+      el.setAttribute('data-count-to', String(val));
+      if (fmt === 'num') el.setAttribute('data-count-fmt', 'num');
+      else el.removeAttribute('data-count-fmt');
+      el.textContent = fmt === 'num' ? fmtNum(val) : String(val);
+    };
+    setStat('#statNotes', DB.stats.notes || 0);
+    setStat('#statCats', (DB.categories || []).length);
+    setStat('#statTags', (DB.tags || []).length);
+    setStat('#statWords', DB.stats.words || 0, 'num');
     set('#builtAt', '构建于 ' + (DB.stats.builtAt || '—'));
 
-    $('#brandTitle').textContent = CONFIG.title;
-    $('#brandSub').textContent = CONFIG.subtitle;
+    /* 首页统计条与侧栏同源，避免两处各写一份数字 */
+    set('#hStatNotes', DB.stats.notes || 0);
+    set('#hStatCats', (DB.categories || []).length);
+    set('#hStatTags', (DB.tags || []).length);
+    set('#hStatWords', fmtNum(DB.stats.words));
+
+    /* 首页舞台的文案也从 config / stats 取，不写死在 HTML 里 */
+    var hhTitle = $('#hhTitle');
+    if (hhTitle) {
+      hhTitle.innerHTML = 'A Knowledge Base and Blog <em>——By ' +
+        esc(CONFIG.author || 'Deus') + '</em>';
+    }
+    var hhSub = $('#hhSub');
+    if (hhSub) hhSub.textContent = 'Deus的知识库与博客';
+
+    /* 品牌名固定为 Deus's Blog（顶栏视觉的一部分，不跟 config.title 走） */
+    var brandEl = $('#brandTitle');
+    if (brandEl) brandEl.textContent = "Deus's Blog";
+    var brandSub = $('#brandSub');
+    if (brandSub) brandSub.textContent = CONFIG.subtitle;
+    /* config.footer 里通常已经写了 ©2026，再拼一次会出现「©2026 By Deus © 2026」；
+       构建说明单独放一个 span，中间用 .dot 分隔（与设计稿一致） */
+    var foot = CONFIG.footer || '';
+    var hasCopy = foot.indexOf('©') > -1;
     $('#footerText').textContent = (CONFIG.author ? CONFIG.author + ' · ' : '') +
-      (CONFIG.footer || '') + ' © ' + new Date().getFullYear();
+      foot + (hasCopy ? '' : ' © ' + new Date().getFullYear());
+  }
+
+  /* 目录树与归档的展开/折叠：都走事件委托，重渲染后无需重新绑定
+     （#sidebar 与 #app 本身不会被替换，只有内部内容变） */
+  function bindTree() {
+    var side = $('#sidebar');
+    if (side && !side.dataset.treeBound) {
+      side.dataset.treeBound = '1';
+      side.addEventListener('click', function (e) {
+        var btn = e.target.closest ? e.target.closest('[data-toggle-cat], [data-toggle-sub]') : null;
+        if (!btn) return;
+        e.preventDefault();
+        var li = btn.closest('li');
+        var on = !li.classList.contains('is-open');
+        li.classList.toggle('is-open', on);
+        btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+        if (btn.hasAttribute('data-toggle-cat')) state.openCats[btn.getAttribute('data-toggle-cat')] = on;
+        else state.openSubs[btn.getAttribute('data-toggle-sub')] = on;
+        if (window.__treeScrollRepaint) window.__treeScrollRepaint();
+      });
+    }
+
+    var app = $('#app');
+    if (app && !app.dataset.archBound) {
+      app.dataset.archBound = '1';
+      app.addEventListener('click', function (e) {
+        var btn = e.target.closest ? e.target.closest('[data-toggle-month]') : null;
+        if (!btn) return;
+        var box = btn.closest('.arch-month');
+        var on = !box.classList.contains('is-open');
+        box.classList.toggle('is-open', on);
+        btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+        state.openMonths[btn.getAttribute('data-toggle-month')] = on;
+      });
+    }
+  }
+
+  /* 侧栏目录的滚动提示：原生滚动条隐藏在 CSS 里，这里自绘一条 3px 指示条。
+     只在真正滚动时淡入，停手 0.9s 后淡出——静止的目录不该常驻一根滚动条。 */
+  function bindTreeScroll() {
+    var box = $('#treeScroll');
+    var bar = $('#treeScrollbar');
+    if (!box || !bar) return;
+
+    var hideTimer = 0;
+    var frame = 0;
+
+    function paint() {
+      frame = 0;
+      var sh = box.scrollHeight;
+      var ch = box.clientHeight;
+      if (sh <= ch + 2) {
+        bar.style.height = '0px';
+        return;
+      }
+      var h = Math.max(28, Math.round((ch * ch) / sh));
+      var maxTop = ch - h;
+      var top = ((box.scrollTop || 0) / (sh - ch)) * maxTop;
+      bar.style.height = h + 'px';
+      bar.style.transform = 'translateY(' + Math.round(top) + 'px)';
+    }
+
+    function schedulePaint() {
+      if (frame) return;
+      frame = requestAnimationFrame(paint);
+    }
+
+    function showBar() {
+      box.classList.add('is-scrolling');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(function () { box.classList.remove('is-scrolling'); }, 900);
+    }
+
+    box.addEventListener('scroll', function () {
+      schedulePaint();
+      showBar();
+    }, { passive: true });
+
+    window.addEventListener('resize', schedulePaint, { passive: true });
+    window.__treeScrollRepaint = schedulePaint;
+    paint();
   }
 
   /* ------------------------------------------------------------
@@ -769,34 +1225,34 @@
      搜索
      ------------------------------------------------------------ */
   function bindSearch() {
-    var input = $('#searchInput');
-    var clear = $('#searchClear');
-    if (!input) return;
+    var sideInput = $('#searchInput');
+    var sideClear = $('#searchClear');
+    var heroInput = $('#heroSearch');
 
-    var timer = null;
-    input.addEventListener('input', function () {
-      state.q = input.value;
-      if (clear) clear.hidden = !input.value;
-      clearTimeout(timer);
-      timer = setTimeout(function () {
-        var route = parseRoute();
-        if (route.name !== 'home' && state.q) {
-          location.hash = '#/';
-        } else {
-          render();
-        }
-      }, 130);
-    });
+    if (sideInput) bindSearchField(sideInput, sideClear);
+    if (heroInput) bindSearchField(heroInput, null, { live: false });
 
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
-        input.value = ''; state.q = ''; render(); input.blur();
-      }
-    });
+    if (sideClear && sideInput) {
+      sideClear.addEventListener('click', function () {
+        sideInput.value = '';
+        state.q = '';
+        syncSearchValue(sideInput);
+        sideClear.hidden = true;
+        render();
+        sideInput.focus();
+      });
+    }
 
-    if (clear) {
-      clear.addEventListener('click', function () {
-        input.value = ''; state.q = ''; if (clear) clear.hidden = true; render(); input.focus();
+    /* 首页搜索框：回车提交（不刷新页面） */
+    var form = $('#hhSearchForm');
+    if (form && heroInput) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        state.q = heroInput.value;
+        syncSearchValue(heroInput);
+        /* 舞台只负责「发起搜索」，结果区在笔记库 */
+        if (state.q) location.hash = '#/notes';
+        else render();
       });
     }
 
@@ -806,11 +1262,53 @@
       if (e.key === '/' && !typing) {
         e.preventDefault();
         openNav(false);
-        input.focus();
+        /* 首页舞台上是 hero 搜索框，内页才用侧栏那个 */
+        var target = (document.body.classList.contains('is-home') && heroInput) ? heroInput : sideInput;
+        if (target) target.focus();
       }
       if (e.key === 'Escape') { openNav(false); }
       if (e.key.toLowerCase() === 't' && !typing && !e.ctrlKey && !e.metaKey) {
         applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+      }
+    });
+  }
+
+  /* 两个搜索框写同一份 state.q，输入时互相同步，切页面不丢词 */
+  function syncSearchValue(src) {
+    var a = $('#searchInput');
+    var b = $('#heroSearch');
+    if (a && a !== src) a.value = state.q;
+    if (b && b !== src) b.value = state.q;
+  }
+
+  function bindSearchField(input, clear, opts) {
+    if (!input) return;
+    var timer = null;
+    /* 舞台上的 hero 搜索框不做实时过滤：它一过滤，舞台就会整块收起、
+       用户正在输入的框随即被销毁。改成「回车/点按钮才跳笔记库」。 */
+    var live = !(opts && opts.live === false);
+
+    input.addEventListener('input', function () {
+      state.q = input.value;
+      syncSearchValue(input);
+      if (clear) clear.hidden = !input.value;
+      if (!live) return;
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        var route = parseRoute();
+        if (state.q && route.name !== 'notes') location.hash = '#/notes';
+        else render();
+      }, 130);
+    });
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        input.value = '';
+        state.q = '';
+        syncSearchValue(input);
+        if (clear) clear.hidden = true;
+        render();
+        input.blur();
       }
     });
   }
@@ -830,6 +1328,17 @@
     document.addEventListener('click', function (e) {
       if (e.target.closest && e.target.closest('.sidebar a')) openNav(false);
     });
+
+    /* 「SecNotes」与「首页」在任何页面都必须回到首页顶部。
+       换页时 hashchange 已经会 scrollTo(0,0)；这里补的正是「本来就在首页、
+       hash 没变化 → 不触发 hashchange」的那一半（首页滚到底部时点它们没反应）。 */
+    document.addEventListener('click', function (e) {
+      var hit = e.target.closest && e.target.closest('.brand, .topnav a[data-nav="home"]');
+      if (!hit) return;
+      if (parseRoute().name !== 'home') return;   // 换页交给 hashchange
+      if (state.q) { state.q = ''; syncSearchValue(null); render(); }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   }
 
   /* ------------------------------------------------------------
@@ -838,8 +1347,11 @@
   function boot() {
     applyTheme(state.theme, true);
     buildSidebar();
+    bindTree();
+    bindTreeScroll();
     bindSearch();
     bindNav();
+    bindPager();
 
     /* 注册笔记索引，双向链接 [[标题]] 才能解析为站内链接 */
     if (window.SecRender && SecRender.setNoteIndex) SecRender.setNoteIndex(NOTES);
@@ -886,7 +1398,9 @@
     window.addEventListener('hashchange', function () {
       var r = parseRoute();
       render();
-      if (!(r.name === 'note' && location.hash.indexOf('#', 1) > -1)) {
+      /* 转场进行中时由 startPageTransition 的回调负责归零，
+         这里提前滚动会把「旧页快照」也拉到顶部 */
+      if (!pageVT && !(r.name === 'note' && location.hash.indexOf('#', 1) > -1)) {
         window.scrollTo(0, 0);
       }
     });
@@ -1001,9 +1515,7 @@
       var t = e.target;
       if (!t || !t.hasAttribute) return;
       if (t.hasAttribute('data-clear-filter')) {
-        go('#/');
-      } else if (t.hasAttribute('data-load-more')) {
-        loadMore();
+        go('#/notes');
       }
     });
 
@@ -1046,7 +1558,7 @@
       if (h.id) items.push({ level: parseInt(h.tagName.slice(1), 10), id: h.id, text: h.textContent });
     });
     if (items.length < 2) { nav.innerHTML = ''; return; }
-    nav.innerHTML = '<h5>目录</h5><ul>' + items.map(function (h) {
+    nav.innerHTML = '<h5>本篇目录</h5><ul>' + items.map(function (h) {
       return '<li class="lvl-' + h.level + '"><a href="#' + encodeURIComponent(h.id) +
         '" data-toc="' + h.id + '">' + h.text.replace(/</g, '&lt;') + '</a></li>';
     }).join('') + '</ul>';

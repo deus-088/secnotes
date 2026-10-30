@@ -10,36 +10,42 @@
   --font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Consolas,
     "Liberation Mono", Menlo, monospace;
 
-  --radius: 12px;
-  --radius-sm: 8px;
-  --maxw: 1320px;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --maxw: 1180px;
+  /* 栅格三件套：宽度分档只改这三个变量（见文末「宽屏分档」），
+     不要在 .layout / .post-layout 里再写死像素 */
+  --nav-w: 236px;    /* 左侧导航列 */
+  --rail-w: 216px;   /* 文章页右侧目录列 */
+  --gap-w: 32px;     /* 导航与正文的列间距 */
+  --rail-gap: 34px;  /* 正文与目录的列间距 */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ---------- 深色（默认） ---------- */
 html[data-theme="dark"] {
-  --bg: #0a0e14;
-  --bg-grad: radial-gradient(1200px 600px at 15% -10%, rgba(34, 211, 238, 0.09), transparent 60%),
-             radial-gradient(900px 500px at 95% 0%, rgba(52, 211, 153, 0.07), transparent 55%);
-  --panel: #101822;
-  --panel-2: #0d141d;
-  --panel-hover: #16202c;
-  --border: #1d2937;
-  --border-soft: #16202b;
-  --text: #dce7f2;
-  --text-strong: #f2f8ff;
-  --muted: #8296ab;
-  --muted-2: #64798f;
-  --accent: #22d3ee;
-  --accent-2: #34d399;
-  --accent-soft: rgba(34, 211, 238, 0.12);
-  --accent-line: rgba(34, 211, 238, 0.28);
+  --bg: #1b1b1d;
+  --bg-grad: radial-gradient(1000px 520px at 78% -14%, rgba(37, 194, 160, 0.10), transparent 62%),
+             radial-gradient(760px 420px at 4% 108%, rgba(37, 194, 160, 0.04), transparent 66%);
+  --panel: #242526;
+  --panel-2: #1f2022;
+  --panel-hover: #2f3033;
+  --border: #3a3b3d;
+  --border-soft: #2f3032;
+  --text: #dadbdc;
+  --text-strong: #ffffff;
+  --muted: #9aa0a6;
+  --muted-2: #7f858b;
+  --accent: #25c2a0;
+  --accent-2: #1fae90;
+  --accent-soft: rgba(37, 194, 160, 0.13);
+  --accent-line: rgba(37, 194, 160, 0.36);
   --mark-bg: rgba(250, 204, 21, 0.26);
   --mark-fg: #fde68a;
-  --code-bg: #0c121a;
-  --shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
-  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.3);
-  --scroll: #26364a;
+  --code-bg: #161617;
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.48);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.34);
+  --scroll: #3a3b3d;
 
   /* 思维导图（```mindmap）：一级分支各取一色，节点/连线共用 */
   --mm-1: #22d3ee;
@@ -48,37 +54,37 @@ html[data-theme="dark"] {
   --mm-4: #fbbf24;
   --mm-5: #f472b6;
   --mm-6: #60a5fa;
-  --mm-node-bg: #121c27;
-  --mm-node-bd: #24344a;
+  --mm-node-bg: #1f2022;
+  --mm-node-bd: #3a3b3d;
   /* 中心主题刻意用中性色：分支调色板是循环取用的，
      若根节点也参与配色，就会与某一级分支撞色（.mm-b0 尤其） */
-  --mm-root-bg: #18242f;
+  --mm-root-bg: #26272a;
   --mm-root-bd: #93a8bd;
-  --mm-text: #dce7f2;
+  --mm-text: #dadbdc;
 }
 
 /* ---------- 浅色 ---------- */
 html[data-theme="light"] {
-  --bg: #f6f8fb;
-  --bg-grad: radial-gradient(1100px 560px at 12% -12%, rgba(8, 145, 178, 0.09), transparent 60%),
-             radial-gradient(900px 480px at 98% -4%, rgba(16, 185, 129, 0.08), transparent 55%);
+  --bg: #ffffff;
+  --bg-grad: radial-gradient(900px 480px at 80% -16%, rgba(37, 194, 160, 0.09), transparent 62%),
+             radial-gradient(700px 400px at 2% 108%, rgba(37, 194, 160, 0.04), transparent 66%);
   --panel: #ffffff;
-  --panel-2: #f9fbfd;
-  --panel-hover: #f2f6fa;
-  --border: #e3e9f0;
-  --border-soft: #eef2f7;
-  --text: #1c2b3a;
-  --text-strong: #0b1724;
-  --muted: #5f7488;
-  --muted-2: #8595a5;
-  --accent: #0e7490;
-  --accent-2: #047857;
-  --accent-soft: rgba(14, 116, 144, 0.09);
-  --accent-line: rgba(14, 116, 144, 0.25);
+  --panel-2: #f6f7f8;
+  --panel-hover: #f2f4f5;
+  --border: #dadde1;
+  --border-soft: #ebedf0;
+  --text: #1c1e21;
+  --text-strong: #101214;
+  --muted: #545c66;
+  --muted-2: #8d949e;
+  --accent: #0e7c66;
+  --accent-2: #0a6b58;
+  --accent-soft: rgba(37, 194, 160, 0.12);
+  --accent-line: rgba(14, 124, 102, 0.30);
   --mark-bg: rgba(250, 204, 21, 0.42);
   --mark-fg: #713f12;
-  --code-bg: #f4f7fa;
-  --shadow: 0 12px 30px rgba(20, 40, 60, 0.1);
+  --code-bg: #f6f8fa;
+  --shadow: 0 12px 30px rgba(20, 40, 60, 0.10);
   --shadow-sm: 0 2px 8px rgba(20, 40, 60, 0.07);
   --scroll: #c4d0dc;
 
@@ -184,7 +190,7 @@ code, pre, kbd { font-family: var(--font-mono); }
 /* ============================ 布局 ============================ */
 .layout {
   max-width: var(--maxw); margin: 0 auto; padding: 28px 24px 60px;
-  display: grid; grid-template-columns: 268px minmax(0, 1fr); gap: 30px;
+  display: grid; grid-template-columns: var(--nav-w) minmax(0, 1fr); gap: var(--gap-w);
   align-items: start;
 }
 
@@ -297,7 +303,11 @@ code, pre, kbd { font-family: var(--font-mono); }
 }
 .filter-pill button { border: none; background: none; color: inherit; cursor: pointer; font-size: 15px; line-height: 1; padding: 0; }
 
-.note-list { display: flex; flex-direction: column; gap: 12px; }
+.note-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+  gap: 16px;
+}
 
 .load-more-wrap {
   display: flex; flex-direction: column; align-items: center; gap: 9px;
@@ -316,9 +326,10 @@ code, pre, kbd { font-family: var(--font-mono); }
 .load-more-hint { font-size: 12.5px; color: var(--muted-2); font-family: var(--font-mono); }
 
 .note-card {
-  display: block; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: 7px;
+  text-decoration: none; color: inherit; min-height: 188px;
   background: var(--panel); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 19px 22px;
+  border-radius: 16px; padding: 15px 17px 13px;
   transition: border-color 0.18s var(--ease), transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
   position: relative;
 }
@@ -394,7 +405,7 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 
 /* ============================ 文章页 ============================ */
 .post-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 34px; }
-.post-layout { display: grid; grid-template-columns: minmax(0, 1fr) 216px; gap: 34px; align-items: start; }
+.post-layout { display: grid; grid-template-columns: minmax(0, 1fr) var(--rail-w); gap: var(--rail-gap); align-items: start; }
 
 .post-header { margin-bottom: 26px; padding-bottom: 22px; border-bottom: 1px solid var(--border); }
 .crumbs {
@@ -666,6 +677,10 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 /* ============================ 动效 ============================ */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .animate { animation: fadeUp 0.34s var(--ease) both; }
+/* 卡片是例外：both 会把终帧（transform:none）永久钉在元素上，而动画原点优先于
+   普通声明，卡片就再也吃不到 3D 倾斜。改成 backwards——只在延迟期间套首帧（不闪），
+   播完立刻把 transform 还给元素本身。只改卡片，别的地方保持 both。 */
+.note-card.animate { animation-fill-mode: backwards; }
 .note-card:nth-child(1) { animation-delay: 0.01s; }
 .note-card:nth-child(2) { animation-delay: 0.04s; }
 .note-card:nth-child(3) { animation-delay: 0.07s; }
@@ -676,6 +691,29 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   html { scroll-behavior: auto; }
+}
+
+/* ============================ 宽屏分档 ============================
+   1440 以下完全沿用原宽度，移动端零影响。
+   上限刻意停在 1520：正文行宽超过约 55 字/行，眼睛回扫距离变长、
+   跳行率明显上升，宁可留白也不铺满。
+   ================================================================ */
+@media (min-width: 1440px) {
+  :root {
+    --maxw: 1300px; --nav-w: 276px; --rail-w: 240px;
+    --gap-w: 34px; --rail-gap: 38px;
+  }
+  /* 248 是「四列能提前一档出现」的阈值：主列 1054 时长 1072 / 266 ≈ 4.03 */
+  .note-list { gap: 18px; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); }
+  .hero { padding: 34px 36px; }
+}
+
+@media (min-width: 1680px) {
+  :root { --maxw: 1420px; --nav-w: 284px; --rail-w: 276px; }
+}
+
+@media (min-width: 1900px) {
+  :root { --maxw: 1520px; --nav-w: 288px; --rail-w: 300px; }
 }
 
 /* ============================ 响应式 ============================ */
@@ -707,6 +745,11 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   .post-nav .next { text-align: left; }
   .related-list { grid-template-columns: 1fr; }
   .brand-text small { display: none; }
+}
+
+@media (max-width: 620px) {
+  .note-list { grid-template-columns: 1fr; }
+  .hero-foot { margin-top: 20px; }
 }
 
 @media (max-width: 520px) {
