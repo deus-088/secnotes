@@ -1318,6 +1318,12 @@
      ------------------------------------------------------------ */
   function openNav(open) {
     document.body.classList.toggle('nav-open', !!open);
+    if (!open) {
+      /* 抽屉关掉时把「展开的搜索框」一并收起，下次进来还是干干净净一个按钮 */
+      document.body.classList.remove('drawer-search-open');
+      var sb = $('#drawerSearchBtn');
+      if (sb) sb.setAttribute('aria-expanded', 'false');
+    }
   }
 
   function bindNav() {
@@ -1372,6 +1378,26 @@
         applyTheme(state.theme === 'dark' ? 'light' : 'dark');
       });
     }
+    /* 移动端顶栏不再放主题按钮，抽屉里这颗走同一套切换 */
+    var drawerTheme = $('#drawerTheme');
+    if (drawerTheme) {
+      drawerTheme.addEventListener('click', function () {
+        applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+      });
+    }
+
+    /* 抽屉搜索：先是一个按钮，点开才展开输入框并聚焦 */
+    var drawerSearchBtn = $('#drawerSearchBtn');
+    if (drawerSearchBtn) {
+      drawerSearchBtn.addEventListener('click', function () {
+        var open = !document.body.classList.contains('drawer-search-open');
+        document.body.classList.toggle('drawer-search-open', open);
+        drawerSearchBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) {
+          setTimeout(function () { var i = $('#searchInput'); if (i) i.focus(); }, 120);
+        }
+      });
+    }
 
     var searchToggle = $('#searchToggle');
     if (searchToggle) {
@@ -1397,6 +1423,10 @@
 
     window.addEventListener('hashchange', function () {
       var r = parseRoute();
+      /* 换页时把抽屉里的搜索收起：否则下次拉开抽屉直接是输入框，按钮没了 */
+      document.body.classList.remove('drawer-search-open');
+      var dsb = $('#drawerSearchBtn');
+      if (dsb) dsb.setAttribute('aria-expanded', 'false');
       render();
       /* 转场进行中时由 startPageTransition 的回调负责归零，
          这里提前滚动会把「旧页快照」也拉到顶部 */

@@ -2,9 +2,9 @@
    新增笔记：在 notes/ 目录下新建 .md 文件后重新运行 python build.py */
 window.SEC_BLOG = {
 "config":{
-"title":"Deus's Blog",
-"subtitle":"我的笔记库",
-"description":"[10.18]欢迎各位考察！建议按分类查找",
+"title":"我的知识(笔记)库",
+"subtitle":"Knowledge & Notes",
+"description":"这里记录了关于网安（渗透）的一些知识点与笔记，大部分是纯手写的",
 "author":"",
 "footer":"©2026 By Deus",
 "defaultTheme":"dark",
@@ -17,7 +17,7 @@ window.SEC_BLOG = {
 "categories":9,
 "tags":18,
 "words":8728,
-"builtAt":"2026-11-01 16:23"
+"builtAt":"2026-11-01 23:11"
 },
 "categories":[
 [

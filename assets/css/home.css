@@ -435,10 +435,18 @@ body.is-home .hh-rv.in { opacity: 1; transform: none; }
 
 /* ---------- 响应式 ---------- */
 @media (max-width: 900px) {
-  .topbar-inner { padding: 0 20px; grid-template-columns: auto 1fr auto; }
-  .topnav { display: none; }
+  /* 移动端顶栏只留：头像 | ‹ › | 首页 | 笔记库 | ☰ */
+  .topbar-inner { padding: 0 14px; grid-template-columns: auto 1fr auto; gap: 8px; }
+  body .brand-text { display: none; }        /* 品牌英文名不上移动端 */
+  body #themeToggle { display: none; }       /* 亮暗切换搬进抽屉 */
+  .topnav { display: flex; justify-self: start; margin-left: 2px; gap: 0; }
+  .topnav a { display: inline-flex; padding: 6px 8px; font-size: 13.5px; }
+  .topnav a[data-nav="feedback"] { display: none; }   /* 反馈只在抽屉里 */
   .topbar .menu-btn { display: grid; }
   .gh-link { display: none; }
+  .nav-brand { gap: 6px; }
+  .npager { gap: 2px; }
+  .np-btn { width: 30px; height: 30px; font-size: 19px; border-radius: 8px; }
 
   body.is-home .hero { min-height: 660px; }
   body.is-home .track span { font-size: 19vw; }
@@ -710,3 +718,52 @@ body .brand-mark.brand-avatar i {
   color: #fff; line-height: 1;
 }
 body .brand-mark.brand-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ============================================================================
+   移动端抽屉（≤900px）
+   首页 / 笔记库 已在顶栏 → 抽屉只留反馈；搜索收成一个按钮；新增亮暗切换；
+   统计块让位给目录；笔记库下补 归档 / 标签 入口。
+   ========================================================================== */
+.drawer-only { display: none; }
+
+@media (max-width: 900px) {
+  /* 首页此前把 .sidebar 整个 display:none 了，导致汉堡点了没反应；打开时放出来 */
+  body.is-home.nav-open .sidebar { display: flex; }
+
+  #sideTheme.drawer-only { display: block; }
+  /* 注意：这里不要把 #drawerShortcuts 一起写进上面这条——它的特异性(1,1,0)
+     会压过下面的 #drawerShortcuts{display:none}，导致首页也显示归档/标签。
+     交给 #drawerShortcuts + body.is-notes #drawerShortcuts(1,1,1) 两条来管。 */
+  .drawer-action { display: flex; }
+
+  .drawer-action {
+    align-items: center; gap: 10px;
+    width: 100%; padding: 10px 12px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--panel-2);
+    color: var(--text); font-size: 14px; font-family: inherit;
+    cursor: pointer; text-align: left;
+  }
+  .drawer-action:hover { background: var(--panel-hover); }
+  .drawer-action svg { color: var(--muted); flex-shrink: 0; }
+
+  /* 搜索：默认只有一个按钮，点开后按钮让位给输入框 */
+  body:not(.drawer-search-open) #sideSearch .search-box { display: none; }
+  body.drawer-search-open #drawerSearchBtn { display: none; }
+  #sideSearch .search-hint { margin-top: 8px; }
+
+  /* 四个统计数字在移动端删掉，纵向空间全部让给总目录 */
+  #sideStats { display: none; }
+  #sideTree { flex: 1 1 auto; min-height: 0; }
+
+  /* 归档 / 标签入口：只在笔记库页面出现 */
+  #drawerShortcuts { display: none; }
+  body.is-notes #drawerShortcuts { display: block; }
+  .shortcut-row { display: flex; gap: 8px; }
+  .shortcut-row a {
+    flex: 1; text-align: center; padding: 9px 10px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--panel-2);
+    color: var(--text); font-size: 13.5px; text-decoration: none;
+    transition: border-color .18s, color .18s;
+  }
+  .shortcut-row a:hover { border-color: var(--accent-line); color: var(--accent); }
+}
