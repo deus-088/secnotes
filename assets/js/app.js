@@ -857,6 +857,7 @@
     document.body.classList.toggle('is-notes', isNotesCtx);
     /* 回到首页就复位，下次再进库时侧栏数字重新滚一次 */
     if (!isNotesCtx) state.statPlayed = false;
+    else playSiteNotice();
     var heroEl = $('#homeHero');
     if (heroEl) heroEl.hidden = !isHome;
     if (window.HomeHero) window.HomeHero.setActive(isHome);
@@ -1120,6 +1121,31 @@
 
   /* 目录树与归档的展开/折叠：都走事件委托，重渲染后无需重新绑定
      （#sidebar 与 #app 本身不会被替换，只有内部内容变） */
+  /* 展开目录节点后把它滚进可视区：移动端抽屉里树很长，
+     不滚的话展开的内容经常落在屏幕外，看着像「点了没反应」 */
+  function revealTreeItem(el) {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        var box = el.parentElement;
+        while (box && box !== document.body) {
+          var cs = getComputedStyle(box);
+          if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') &&
+              box.scrollHeight > box.clientHeight + 4) break;
+          box = box.parentElement;
+        }
+        if (!box || box === document.body) return;
+        var br = box.getBoundingClientRect();
+        var lr = el.getBoundingClientRect();
+        var pad = 12;
+        var delta = 0;
+        if (lr.height > br.height - pad * 2) delta = lr.top - br.top - pad;
+        else if (lr.top < br.top + pad) delta = lr.top - br.top - pad;
+        else if (lr.bottom > br.bottom - pad) delta = lr.bottom - br.bottom + pad;
+        if (delta) box.scrollBy({ top: delta, behavior: 'smooth' });
+      });
+    });
+  }
+
   function bindTree() {
     var side = $('#sidebar');
     if (side && !side.dataset.treeBound) {
@@ -1135,6 +1161,7 @@
         if (btn.hasAttribute('data-toggle-cat')) state.openCats[btn.getAttribute('data-toggle-cat')] = on;
         else state.openSubs[btn.getAttribute('data-toggle-sub')] = on;
         if (window.__treeScrollRepaint) window.__treeScrollRepaint();
+        if (on) revealTreeItem(li);
       });
     }
 
@@ -1316,6 +1343,55 @@
   /* ------------------------------------------------------------
      移动端导航
      ------------------------------------------------------------ */
+  /* ------------------------------------------------------------
+     维护横幅：从右侧滑入，停留 3 秒，再向左滑出并收起
+     ------------------------------------------------------------ */
+  var noticePlayed = false;
+
+  function hideSiteNotice() {
+    var el = $('#siteNotice');
+    if (!el || el.dataset.gone === '1') return;
+    el.dataset.gone = '1';
+    var h = el.offsetHeight;
+    el.style.transition = 'transform .34s cubic-bezier(.4,0,.2,1), opacity .34s';
+    el.style.transform = 'translate3d(-100%,0,0)';
+    el.style.opacity = '0';
+    setTimeout(function () {
+      /* 收起高度，避免横幅消失时正文整体跳一下 */
+      el.style.transition = 'height .22s ease, padding .22s ease, border-width .22s';
+      el.style.height = h + 'px';
+      el.style.overflow = 'hidden';
+      el.style.boxSizing = 'border-box';
+      requestAnimationFrame(function () {
+        el.style.height = '0px';
+        el.style.paddingTop = '0';
+        el.style.paddingBottom = '0';
+        el.style.borderBottomWidth = '0';
+      });
+      setTimeout(function () { el.hidden = true; }, 240);
+    }, 350);
+  }
+
+  /* 叉叉：立刻走「左出 + 收起」这一套，和自动消失同一条路径 */
+  document.addEventListener('click', function (e) {
+    var x = e.target.closest ? e.target.closest('#siteNotice .sn-x') : null;
+    if (x) { e.preventDefault(); hideSiteNotice(); }
+  }, { passive: false });
+
+  function playSiteNotice() {
+    var el = $('#siteNotice');
+    if (!el || noticePlayed || el.hidden) return;
+    noticePlayed = true;
+    if (reduceMotion) { setTimeout(hideSiteNotice, 3000); return; }
+    el.style.transform = 'translate3d(100%,0,0)';
+    el.style.opacity = '0';
+    void el.offsetWidth;                      // 提交起始帧
+    el.style.transition = 'transform .42s cubic-bezier(.22,1,.36,1), opacity .42s';
+    el.style.transform = 'translate3d(0,0,0)';
+    el.style.opacity = '1';
+    setTimeout(hideSiteNotice, 3000);
+  }
+
   function openNav(open) {
     document.body.classList.toggle('nav-open', !!open);
     if (!open) {
@@ -1587,7 +1663,15 @@
     hs.forEach(function (h) {
       if (h.id) items.push({ level: parseInt(h.tagName.slice(1), 10), id: h.id, text: h.textContent });
     });
-    if (items.length < 2) { nav.innerHTML = ''; return; }
+    /* 少于 2 条（含一条都没有）就没必要给入口：按钮藏起来，
+       否则点开是一个空抽屉，看着像「按了没反应」 */
+    if (items.length < 2) {
+      nav.innerHTML = '';
+      btn.hidden = true;
+      if (body.classList.contains('toc-open')) closeToc();
+      return;
+    }
+    btn.hidden = false;
     nav.innerHTML = '<h5>本篇目录</h5><ul>' + items.map(function (h) {
       return '<li class="lvl-' + h.level + '"><a href="#' + encodeURIComponent(h.id) +
         '" data-toc="' + h.id + '">' + h.text.replace(/</g, '&lt;') + '</a></li>';
@@ -1628,7 +1712,11 @@
   }
 
   btn.addEventListener('click', function () {
-    body.classList.contains('toc-open') ? closeToc() : openToc();
+    var isOpen = body.classList.contains('toc-open');
+    /* 拖动抽屉后 --tx 可能残留一个大位移，会把抽屉推到屏幕外——
+       表现为「点了没反应」，所以每次打开前先清掉 */
+    if (!isOpen) drawer.style.removeProperty('--tx');
+    isOpen ? closeToc() : openToc();
   });
   closeBtn.addEventListener('click', closeToc);
   var backdrop = document.getElementById('backdrop');

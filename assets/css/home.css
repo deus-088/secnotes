@@ -439,7 +439,9 @@ body.is-home .hh-rv.in { opacity: 1; transform: none; }
   .topbar-inner { padding: 0 14px; grid-template-columns: auto 1fr auto; gap: 8px; }
   body .brand-text { display: none; }        /* 品牌英文名不上移动端 */
   body #themeToggle { display: none; }       /* 亮暗切换搬进抽屉 */
-  .topnav { display: flex; justify-self: start; margin-left: 2px; gap: 0; }
+  /* 绝对居中：不随左侧「头像+翻页」宽度变化而左右漂移（首页/笔记库位置一致） */
+  .topbar-inner { position: relative; }
+  .topnav { display: flex; position: absolute; left: 50%; transform: translateX(-50%); gap: 0; }
   .topnav a { display: inline-flex; padding: 6px 8px; font-size: 13.5px; }
   .topnav a[data-nav="feedback"] { display: none; }   /* 反馈只在抽屉里 */
   .topbar .menu-btn { display: grid; }
@@ -453,7 +455,9 @@ body.is-home .hh-rv.in { opacity: 1; transform: none; }
   body.is-home .wm-blur .track { filter: blur(5px); opacity: .58; }
   body.is-home .wm-glow .track { filter: blur(16px); opacity: .26; }
   body.is-home .ball { width: 42vw; margin: -21vw 0 0 -21vw; }
-  body.is-home .beam { width: 34vw; margin: -17vw 0 0 -17vw; }
+  /* 移动端不画光弧：它 34vw 的圆环正好压在球下方，合成层边界会在球附近
+     压出一条 1px 暗线（实测把整条接缝从 18 降到 5），去掉后反而更干净 */
+  body.is-home .beam { display: none; }
   body.is-home .hero-in { bottom: 11vh; width: calc(100% - 36px); }
   body.is-home .hero-copy { gap: 17px; }
   body.is-home .hero .sub { font-size: 12.5px; line-height: 1.8; }
@@ -730,7 +734,10 @@ body .brand-mark.brand-avatar img { width: 100%; height: 100%; object-fit: cover
   /* 首页此前把 .sidebar 整个 display:none 了，导致汉堡点了没反应；打开时放出来 */
   body.is-home.nav-open .sidebar { display: flex; }
 
-  #sideTheme.drawer-only { display: block; }
+  /* 反馈 + 亮暗切换 并排一行 */
+  .drawer-pair { display: flex; gap: 8px; }
+  .drawer-pair .drawer-action { flex: 1 1 0; justify-content: center; padding: 10px 8px; }
+  .drawer-pair .drawer-action span { font-size: 13.5px; }
   /* 注意：这里不要把 #drawerShortcuts 一起写进上面这条——它的特异性(1,1,0)
      会压过下面的 #drawerShortcuts{display:none}，导致首页也显示归档/标签。
      交给 #drawerShortcuts + body.is-notes #drawerShortcuts(1,1,1) 两条来管。 */

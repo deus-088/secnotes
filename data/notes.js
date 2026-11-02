@@ -17,7 +17,7 @@ window.SEC_BLOG = {
 "categories":9,
 "tags":18,
 "words":8728,
-"builtAt":"2026-11-01 23:11"
+"builtAt":"2026-11-02 13:43"
 },
 "categories":[
 [

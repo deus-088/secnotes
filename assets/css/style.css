@@ -12,13 +12,13 @@
 
   --radius: 14px;
   --radius-sm: 10px;
-  --maxw: 1180px;
+  --maxw: 1260px;
   /* 栅格三件套：宽度分档只改这三个变量（见文末「宽屏分档」），
      不要在 .layout / .post-layout 里再写死像素 */
-  --nav-w: 236px;    /* 左侧导航列 */
-  --rail-w: 216px;   /* 文章页右侧目录列 */
-  --gap-w: 32px;     /* 导航与正文的列间距 */
-  --rail-gap: 34px;  /* 正文与目录的列间距 */
+  --nav-w: 210px;    /* 左侧导航列（收窄，把宽度让给正文） */
+  --rail-w: 190px;   /* 文章页右侧目录列 */
+  --gap-w: 28px;     /* 导航与正文的列间距 */
+  --rail-gap: 28px;  /* 正文与目录的列间距 */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -699,9 +699,10 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
    跳行率明显上升，宁可留白也不铺满。
    ================================================================ */
 @media (min-width: 1440px) {
+  /* 侧栏与右目录各让出一点，整体再加宽：正文从 ~664 提到 ~850 */
   :root {
-    --maxw: 1300px; --nav-w: 276px; --rail-w: 240px;
-    --gap-w: 34px; --rail-gap: 38px;
+    --maxw: 1340px; --nav-w: 230px; --rail-w: 196px;
+    --gap-w: 28px; --rail-gap: 30px;
   }
   /* 248 是「四列能提前一档出现」的阈值：主列 1054 时长 1072 / 266 ≈ 4.03 */
   .note-list { gap: 18px; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); }
@@ -709,11 +710,11 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 }
 
 @media (min-width: 1680px) {
-  :root { --maxw: 1420px; --nav-w: 284px; --rail-w: 276px; }
+  :root { --maxw: 1460px; --nav-w: 238px; --rail-w: 210px; }
 }
 
 @media (min-width: 1900px) {
-  :root { --maxw: 1520px; --nav-w: 288px; --rail-w: 300px; }
+  :root { --maxw: 1560px; --nav-w: 244px; --rail-w: 224px; }
 }
 
 /* ============================ 响应式 ============================ */

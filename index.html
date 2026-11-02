@@ -21,13 +21,13 @@
 <!-- 资源全部走同源相对路径：GitHub Pages 上可立即生效，不经过 jsDelivr 的 @main 缓存 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-dark.min.css" id="hljs-theme-dark">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-light.min.css" id="hljs-theme-light" disabled>
-<script>window.SEC_ASSET_V = '?v=20261101d';</script>
-<link rel="stylesheet" href="assets/css/style.css?v=20261101d">
-<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261101d">
-<link rel="stylesheet" href="assets/css/feedback.css?v=20261101d">
-<link rel="preload" href="assets/js/app.js?v=20261101d" as="script">
-<link rel="stylesheet" href="assets/css/liquid.css?v=20261101d">
-<link rel="stylesheet" href="assets/css/home.css?v=20261101d">
+<script>window.SEC_ASSET_V = '?v=20261102c';</script>
+<link rel="stylesheet" href="assets/css/style.css?v=20261102c">
+<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261102c">
+<link rel="stylesheet" href="assets/css/feedback.css?v=20261102c">
+<link rel="preload" href="assets/js/app.js?v=20261102c" as="script">
+<link rel="stylesheet" href="assets/css/liquid.css?v=20261102c">
+<link rel="stylesheet" href="assets/css/home.css?v=20261102c">
 <script>
 /* 只有直接落在文章页时才预取渲染器：首页/归档/标签页不需要这 177KB */
 (function () {
@@ -135,10 +135,6 @@
 <div class="layout">
   <aside class="sidebar" id="sidebar">
 <div class="drawer-grip" aria-hidden="true"></div>
-<ul class="side-list mobile-feedback" id="drawerNav" style="margin:0 0 12px">
-<!-- 首页 / 笔记库 已经移到移动端顶栏，这里只留反馈 -->
-<li><a href="javascript:void(0)" id="mobileFeedback" data-nav="feedback" style="font-weight:600">反馈</a></li>
-</ul>
     <div class="side-block" id="sideSearch">
       <!-- 移动端只露这一个按钮，点开才展开输入框（桌面端按钮隐藏、输入框常显） -->
       <button class="drawer-action drawer-only" id="drawerSearchBtn" type="button" aria-expanded="false">
@@ -153,7 +149,12 @@
       <div class="search-hint" id="searchHint" hidden></div>
     </div>
 
-    <div class="side-block drawer-only" id="sideTheme">
+    <!-- 反馈 与 亮暗切换 并排，挂在搜索下面（和 归档/标签 同样的两列布局） -->
+    <div class="drawer-pair drawer-only" id="drawerPair">
+      <a class="drawer-action" href="javascript:void(0)" id="mobileFeedback" data-nav="feedback">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.9-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/></svg>
+        <span>反馈</span>
+      </a>
       <button class="drawer-action" id="drawerTheme" type="button">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
         <span>亮暗切换</span>
@@ -213,7 +214,7 @@
      用 ?t=时间戳 强制每次都重新拉；第一次加载完成后才启动 app.js。 -->
 <script>
 (function boot(){
-  var V = '?v=20261101d';
+  var V = '?v=20261102c';
   var SOURCES = ['data/notes.js', 'assets/js/app.js'];
   var i = 0;
   function next(){
@@ -228,10 +229,10 @@
   next();
 })();
 </script>
-<script src="assets/js/home.js?v=20261101d"></script>
-<script src="assets/js/liquid.js?v=20261101d"></script>
-<script src="assets/js/feedback.js?v=20261101d"></script>
-<script src="assets/js/sync-notice.js?v=20261101d"></script>
+<script src="assets/js/home.js?v=20261102c"></script>
+<script src="assets/js/liquid.js?v=20261102c"></script>
+<script src="assets/js/feedback.js?v=20261102c"></script>
+<script src="assets/js/sync-notice.js?v=20261102c"></script>
 <script>(function(){var b=document.getElementById("siteNotice");if(!b)return;var x=b.querySelector(".sn-x");if(x)x.addEventListener("click",function(){sessionStorage.setItem("secnot_notice_closed","1");b.remove();});})();</script>
 <div class="toc-drawer" id="tocDrawer" aria-hidden="true"><div class="drawer-grip" aria-hidden="true"></div><div class="toc-drawer-head"><span>本篇目录</span><button type="button" class="icon-btn" id="tocClose" aria-label="关闭目录">&times;</button></div><nav class="toc" id="tocMobile"></nav></div>
 </body>
