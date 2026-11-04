@@ -4,7 +4,7 @@ window.SEC_BLOG = {
 "config":{
 "title":"我的知识(笔记)库",
 "subtitle":"Knowledge & Notes",
-"description":"这里记录了关于网安（渗透）的一些知识点与笔记，大部分是纯手写的",
+"description":"这里记录了关于网安（渗透）的一些知识与笔记，我的来时路",
 "author":"",
 "footer":"©2026 By Deus",
 "defaultTheme":"dark",
@@ -17,7 +17,7 @@ window.SEC_BLOG = {
 "categories":9,
 "tags":19,
 "words":10012,
-"builtAt":"2026-11-04 13:58"
+"builtAt":"2026-11-04 16:49"
 },
 "categories":[
 [

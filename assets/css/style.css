@@ -758,60 +758,57 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   .stat-grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* ---------- file:// 下点「工具」的说明条 ----------
-   独立静态应用（apps/protocol-explorer/）必须先有 HTTP 环境：file:// 下浏览器会
-   以 CORS 为由拦掉它的 ES module，只留下白屏或目录清单。这里把原因和命令一次说清。 */
-.file-hint {
-  position: fixed; top: 84px; left: 50%; z-index: 95;
-  display: flex; align-items: flex-start; gap: 10px;
-  max-width: min(600px, calc(100vw - 32px));
-  padding: 13px 14px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .22);
-  color: var(--text);
-  font-size: 13.5px; line-height: 1.65;
-  opacity: 0; visibility: hidden;
-  transform: translate(-50%, -6px);
-  transition: opacity .2s var(--ease), transform .2s var(--ease), visibility .2s;
-  pointer-events: none;
+/* ============================ 工具页 ============================ */
+.tool-grid {
+  display: grid;
+  /* 420 起排：1440 下两列各约 500px（标题不折行），窄屏 auto-fill 自动降到一列 */
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 16px;
 }
-.file-hint.is-on {
-  opacity: 1; visibility: visible;
-  transform: translate(-50%, 0);
-  pointer-events: auto;
+.tool-card {
+  display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px 22px 18px;
+  transition: border-color .18s var(--ease), transform .18s var(--ease), box-shadow .18s var(--ease);
 }
-.file-hint .fh-ic { flex: 0 0 auto; margin-top: 1px; color: var(--accent); }
-.file-hint .fh-tx { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.file-hint .fh-tx b { font-size: 13.5px; font-weight: 600; color: var(--text-strong); }
-.file-hint .fh-tx span { color: var(--muted); }
-.file-hint code {
-  padding: 1px 5px; margin: 0 1px;
-  background: var(--code-bg); border: 1px solid var(--border-soft);
-  border-radius: 5px;
-  font-family: var(--font-mono); font-size: 12.5px;
-  color: var(--text-strong); white-space: nowrap;
+.tool-card:hover {
+  border-color: var(--accent-line);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
-.file-hint .fh-x {
-  flex: 0 0 auto; width: 24px; height: 24px; margin: -4px -4px 0 2px;
-  display: grid; place-items: center;
-  border: 0; border-radius: 6px; background: none;
-  color: var(--muted); font-size: 17px; line-height: 1; cursor: pointer;
+/* fadeUp 的终帧是 transform:none，用 both 会永久钉住，卡片就吃不到 hover 位移 */
+.tool-card.animate { animation-fill-mode: backwards; }
+.tool-card:nth-child(2) { animation-delay: .04s; }
+.tool-card:nth-child(3) { animation-delay: .07s; }
+.tool-card:nth-child(4) { animation-delay: .1s; }
+
+.tool-kind {
+  align-self: flex-start;
+  margin: 0 0 11px;
+  font-size: 11.5px; font-family: var(--font-mono); letter-spacing: .02em;
+  color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-2) 30%, transparent);
+  border-radius: 5px; padding: 2px 7px;
 }
-.file-hint .fh-x:hover { background: var(--panel-hover); color: var(--text-strong); }
+.tool-card h3 {
+  margin: 0 0 9px;
+  font-size: 17.5px; line-height: 1.45; font-weight: 650; letter-spacing: -.2px;
+  color: var(--text-strong);
+}
+.tool-card p {
+  margin: 0 0 18px;
+  font-size: 14.2px; line-height: 1.72; color: var(--muted);
+}
+.tool-actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: 10px; }
 
 @media (max-width: 900px) {
-  .file-hint {
-    top: 80px; left: 16px; right: 16px;
-    max-width: none; transform: translateY(-6px);
-  }
-  .file-hint.is-on { transform: none; }
-  .file-hint code { white-space: normal; }
+  .tool-grid { grid-template-columns: 1fr; }
+  .tool-card { padding: 17px 18px 16px; }
 }
 
 @media print {
-  .topbar, .sidebar, .footer, .to-top, .progress-bar, .post-nav, .toc, .file-hint { display: none !important; }
+  .topbar, .sidebar, .footer, .to-top, .progress-bar, .post-nav, .toc { display: none !important; }
   body { background: #fff; color: #000; }
   .layout { display: block; padding: 0; }
   .post-body a { color: #000; }

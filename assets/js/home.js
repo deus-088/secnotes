@@ -28,7 +28,7 @@
 
   var WORD = 'Deus\'s Blog', COUNT = 5;
   var STRENGTH = 1.1;     // 折射强度：>1 边缘折叠
-  var SPEED = 46;         // 字带漂移 px/s
+  var SPEED = 68;         // 字带漂移 px/s（原 46，视觉上略快一档）
   var DPR = Math.min(2, window.devicePixelRatio || 1);
 
   var active = false;
@@ -55,7 +55,10 @@
     if (sp) {
       var cs = window.getComputedStyle(sp);
       unit = sp.getBoundingClientRect().width;
-      fontStr = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+      /* canvas 的 font 简写必须带 font-style，否则球面里的字是正的、
+         背景层是斜的，两层错位一眼就看出来 */
+      fontStr = (cs.fontStyle && cs.fontStyle !== 'normal' ? cs.fontStyle + ' ' : '') +
+        cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
       letterSp = cs.letterSpacing;
     }
     resizeCanvas();

@@ -12,7 +12,7 @@
     <meta name="author" content="Dilum Sanjaya" />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#fdfdfe" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0b1020" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
     <link rel="canonical" href="https://protocol-explorer-alpha.vercel.app/" />
     <link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
@@ -77,8 +77,10 @@
         document.documentElement.dataset.theme = 'light'
       }
     </script>
+    <script src="./pe-defaults.js"></script>
     <script type="module" crossorigin src="./assets/index-4NePqLyW.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-D7FMEo1m.css">
+    <link rel="stylesheet" href="./assets/pe-overrides.css">
   </head>
   <body>
     <div id="app"></div>
@@ -136,7 +138,7 @@
         color: #00238a; background: #fdfdfe;
         opacity: 0; animation: pe-fallback 0.3s ease 1.6s forwards;
       }
-      html[data-theme="dark"] #app:empty::after { color: #9db0d8; background: #0b1020; }
+      html[data-theme="dark"] #app:empty::after { color: #9db0d8; background: #121212; }
       @keyframes pe-fallback { to { opacity: 1; } }
       @media (prefers-reduced-motion: reduce) {
         #app:empty::after { animation: none; opacity: 1; }

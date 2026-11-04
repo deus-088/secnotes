@@ -146,9 +146,18 @@
   function loadHighlight() {
     if (window.hljs || vendor.hlLoading) return;
     vendor.hlLoading = true;
+    var done = function () { vendor.hlLoading = false; applyHighlight(); };
     var s = document.createElement('script');
     s.src = 'assets/vendor/highlight.min.js' + ASSET_V;
-    s.onload = function () { vendor.hlLoading = false; applyHighlight(); };
+    s.onload = function () {
+      /* common 构建不含 http 语言，笔记里有整段 HTTP 报文，单独补一个语言包；
+         加载失败也继续着色，不让一个可选包拖住整页 */
+      var extra = document.createElement('script');
+      extra.src = 'assets/vendor/hljs-http.min.js' + ASSET_V;
+      extra.onload = done;
+      extra.onerror = done;
+      document.head.appendChild(extra);
+    };
     s.onerror = function () { vendor.hlLoading = false; };
     document.head.appendChild(s);
   }
@@ -164,6 +173,8 @@
       var lang = m[1].toLowerCase();
       if (!hljs.getLanguage(lang)) continue;
       try { hljs.highlightElement(el); } catch (e) { /* 单个块失败不影响其他 */ }
+      /* hljs 后到：重扫后同样补一次 SQL 片段配色 */
+      if (window.SecRender && SecRender.enrichSql) SecRender.enrichSql(el);
     }
   }
 
@@ -188,6 +199,26 @@
   function reEscape(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
   /* ------------------------------------------------------------
+     工具清单（#/tools 的数据源）
+     新增一个工具：往数组里加一条即可，卡片会按当前列宽自动排布。
+       title  卡片标题（必填）
+       desc   一句话说明（必填）
+       href   工具入口，**必须相对路径**——站点可能部署在 /secnotes/ 子路径下，
+              以 / 开头会 404
+       kind   左上角小标签（可选，不写就不渲染）
+       cta    按钮文案（可选，默认「立即进入」）
+     ------------------------------------------------------------ */
+  var TOOLS = [
+    {
+      kind: '网络协议',
+      title: '一个动画带你搞懂计算机网络原理',
+      desc: '通过简洁清晰的动画与描述，将计算机网络的各类协议工作原理展示出来，快来看看吧！',
+      href: 'apps/protocol-explorer/index.html',
+      cta: '立即进入'
+    }
+  ];
+
+  /* ------------------------------------------------------------
      路由
      ------------------------------------------------------------ */
   function parseRoute() {
@@ -204,6 +235,7 @@
     if (head === 'category') return { name: 'notes', category: parts.slice(1).join('/') };
     if (head === 'tag') return { name: 'notes', tag: parts.slice(1).join('/') };
     if (head === 'archive' || head === 'tags' ) return { name: head };
+    if (head === 'tools') return { name: 'tools' };
     return { name: 'home' };
   }
 
@@ -387,7 +419,8 @@
       parts.push(
         '<section class="hero animate">' +
           '<div class="hero-inner">' +
-            '<h1>' + esc(CONFIG.title) + ' · <em>' + esc(CONFIG.subtitle) + '</em></h1>' +
+            '<h1>' + esc(CONFIG.title) +
+              '<em>' + esc(CONFIG.subtitle) + '</em></h1>' +
             '<p>' + esc(CONFIG.description || '') + '</p>' +
             '<div class="hero-actions">' +
               '<a class="btn btn-primary" href="#/archive">按时间归档</a>' +
@@ -503,6 +536,37 @@
   /* ------------------------------------------------------------
      视图：标签
      ------------------------------------------------------------ */
+  /* 工具页：一方一格。数据全来自 TOOLS，新增工具不用动这里。 */
+  function viewTools() {
+    var out = [
+      '<section class="hero animate">' +
+        '<div class="hero-inner">' +
+          '<h1>一些有意思的工具</h1>' +
+          '<p>这里收集了一些优秀的工具，帮助学习与理解计算机有关知识</p>' +
+        '</div>' +
+      '</section>',
+      '<div class="tool-grid">'
+    ];
+
+    TOOLS.forEach(function (t) {
+      out.push(
+        '<article class="tool-card animate">' +
+          (t.kind ? '<span class="tool-kind">' + esc(t.kind) + '</span>' : '') +
+          '<h3>' + esc(t.title) + '</h3>' +
+          '<p>' + esc(t.desc) + '</p>' +
+          '<div class="tool-actions">' +
+            '<a class="btn btn-primary" href="' + escAttr(t.href) + '">' +
+              esc(t.cta || '立即进入') +
+            '</a>' +
+          '</div>' +
+        '</article>'
+      );
+    });
+
+    out.push('</div>');
+    return out.join('');
+  }
+
   function viewTags() {
     var cats = DB.categories || [];
     var tags = DB.tags || [];
@@ -725,7 +789,18 @@
   var reduceMotion = !!(window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var pageVT = false;
-  var lastKind = '';
+  var lastIdx = -1;
+
+  /* 顶栏顺序即页面序：首页 0 / 笔记库 1 / 工具 2。
+     推拉方向只由序号差决定，不管用户是从顶栏、卡片还是浏览器前进后退进来的：
+     序号变大就「新页从右推入」，变小就「旧页向右退出」，三个页面两两之间全覆盖。
+     详情页/归档/标签与笔记库同序（1），所以库内跳转不触发整页推拉。 */
+  function pageIndex(r) {
+    if (r.name === 'home' && !state.q) return 0;
+    if (r.name === 'tools') return 2;
+    if (isLibRoute(r)) return 1;
+    return -1;
+  }
 
   function clearPgDir() {
     document.documentElement.removeAttribute('data-pgdir');
@@ -825,12 +900,11 @@
      ------------------------------------------------------------ */
   function render() {
     var route = parseRoute();
-    var kindIsHome = route.name === 'home' && !state.q;
-    var kind = kindIsHome ? 'home' : (isLibRoute(route) ? 'lib' : 'other');
+    var idx = pageIndex(route);
     var dir = 0;
-    if (lastKind === 'home' && kind === 'lib') dir = 1;
-    else if (lastKind === 'lib' && kind === 'home') dir = -1;
-    lastKind = kind;
+    /* 只有两个端点都在三页之内、且序号真的变了，才播推拉 */
+    if (lastIdx >= 0 && idx >= 0 && idx !== lastIdx) dir = idx > lastIdx ? 1 : -1;
+    lastIdx = idx;
 
     if (dir && !reduceMotion && !window.__NO_PAGE_ANIM__ && document.startViewTransition) {
       startPageTransition(dir, renderNow);
@@ -855,6 +929,8 @@
     var isNotesCtx = route.name === 'notes' || route.name === 'note' ||
       route.name === 'archive' || route.name === 'tags';
     document.body.classList.toggle('is-notes', isNotesCtx);
+    /* 工具页：独立单列版式，不显示笔记库侧栏 */
+    document.body.classList.toggle('is-tools', route.name === 'tools');
     /* 回到首页就复位，下次再进库时侧栏数字重新滚一次 */
     if (!isNotesCtx) state.statPlayed = false;
     else playSiteNotice();
@@ -880,6 +956,7 @@
     if (route.name === 'note') html = viewPost(route, note);
     else if (route.name === 'archive') html = viewArchive();
     else if (route.name === 'tags') html = viewTags();
+    else if (route.name === 'tools') html = viewTools();
     else if (isNotesView) html = viewNotes(route);
     else html = viewHome();
 
@@ -912,6 +989,8 @@
         if (toc) { buildToc(headings, toc); spyToc(headings); }
       }
       document.title = note.title + ' · ' + CONFIG.title;
+    } else if (route.name === 'tools') {
+      document.title = '一些有意思的工具 · ' + CONFIG.title;
     } else {
       document.title = CONFIG.title + ' · ' + CONFIG.subtitle;
     }
@@ -1421,28 +1500,6 @@
       if (state.q) { state.q = ''; syncSearchValue(null); render(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-
-    /* 「工具」是站内独立静态应用（apps/protocol-explorer/）。
-       file:// 下浏览器会以 CORS 为由拦掉它的 ES module，点过去只剩白屏；
-       这里不跳转，直接把原因和启动命令说清楚（站点其余部分仍可 file:// 使用）。 */
-    var toolsLink = $('#navTools');
-    var fileHint = $('#fileHint');
-    if (toolsLink && fileHint) {
-      var hintTimer = 0;
-      var closeHint = function () {
-        clearTimeout(hintTimer);
-        fileHint.classList.remove('is-on');
-      };
-      toolsLink.addEventListener('click', function (e) {
-        if (location.protocol !== 'file:') return;   // 有 HTTP 环境就正常整页跳转
-        e.preventDefault();
-        fileHint.classList.add('is-on');
-        clearTimeout(hintTimer);
-        hintTimer = setTimeout(closeHint, 9000);
-      });
-      var hintX = $('.fh-x', fileHint);
-      if (hintX) hintX.addEventListener('click', closeHint);
-    }
   }
 
   /* ------------------------------------------------------------

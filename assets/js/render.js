@@ -27,6 +27,55 @@
     return Array.prototype.slice.call(root.querySelectorAll(sel));
   }
 
+  /* 作者在笔记里习惯写非标准语言名（```kali / ```mysql / ```shell）。
+     highlight.js 只认规范名，这些块会整块无色。这里做一层别名：
+     高亮用规范名，代码块右上角的角标仍显示作者写的原文。 */
+  var LANG_ALIAS = {
+    kali: 'bash', shell: 'bash', sh: 'bash', zsh: 'bash', console: 'bash', term: 'bash',
+    mysql: 'sql', pgsql: 'sql', postgres: 'sql', sqlite: 'sql', mssql: 'sql',
+    js: 'javascript', ts: 'typescript', py: 'python', yml: 'yaml', md: 'markdown'
+  };
+
+  /* ------------------------------------------------------------
+     SQL 片段补色
+     ------------------------------------------------------------
+     注入 payload 往往是一条没有闭合引号的残缺语句（' AND ASCII(...)），
+     highlight.js 会把整段当成一个字符串 token，整块只剩一种颜色。
+     这里只在「整块token数 <= 1」时补一层轻量分词：注释 / 字符串 /
+     关键字 / 数字各挂一个 hljs-* 类，配色仍然交给主题 CSS，
+     不引入自己的色值。
+     ------------------------------------------------------------ */
+  var SQL_WORD = /^(select|from|where|and|or|not|union|all|insert|update|delete|order|by|limit|group|having|join|ascii|substring|substr|length|database|sleep|benchmark|if|case|when|then|else|end|exists|like|in|is|null|count|version|user|current_user|table|schema|information_schema|concat|char|hex|md5|floor|rand|extractvalue|updatexml|load_file|outfile)$/i;
+
+  function enrichFlatSql(code) {
+    if (!code || !/language-sql/i.test(code.className || '')) return;
+    if (code.querySelectorAll('span[class^="hljs-"]').length > 1) return;
+
+    var text = code.textContent;
+    if (text.length < 6) return;
+
+    var out = '';
+    /* 不切字符串：payload 里的单引号本来就不闭合，按字符串处理又会把整段吞成一个
+       token。这里只分「注释 / 词 / 数字」，未闭合的引号按普通字符留在原地。 */
+    var re = /(--[^\n]*|#[^\n]*)|([A-Za-z_][A-Za-z0-9_]*)|(\d+)/g;
+    var last = 0;
+    var m;
+    while ((m = re.exec(text))) {
+      out += esc(text.slice(last, m.index));
+      if (m[1]) out += '<span class="hljs-comment">' + esc(m[1]) + '</span>';
+      else if (m[2]) {
+        out += SQL_WORD.test(m[2])
+          ? '<span class="hljs-keyword">' + esc(m[2]) + '</span>'
+          : esc(m[2]);
+      } else if (m[3]) out += '<span class="hljs-number">' + esc(m[3]) + '</span>';
+      last = m.index + m[0].length;
+    }
+    out += esc(text.slice(last));
+
+    code.innerHTML = out;
+    code.setAttribute('data-highlighted', 'yes');
+  }
+
   function escapeRe(s) {
     return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
@@ -418,15 +467,19 @@
       if (pre.parentNode && pre.parentNode.classList.contains('code-block')) return;
 
       var code = pre.querySelector('code');
-      var lang = '';
+      var rawLang = '';
       if (code) {
         var m = (code.className || '').match(/language-([\w+#.-]+)/i);
-        if (m) lang = m[1].toLowerCase();
+        if (m) rawLang = m[1].toLowerCase();
       }
+      /* 别名解析后再高亮：块类名同步改成规范名，
+         这样 hljs 后加载完走 applyHighlight() 重扫时也能命中 */
+      var lang = LANG_ALIAS[rawLang] || rawLang;
+      if (code && lang && lang !== rawLang) code.className = 'language-' + lang;
 
       /* 思维导图：整体替换为内联 SVG，不套代码块容器、不加复制按钮。
          内容为空时 renderMindmap 返回 null，自动回退成普通代码块。 */
-      if (lang === 'mindmap' && o.mindmap !== false) {
+      if (rawLang === 'mindmap' && o.mindmap !== false) {
         var diagram = renderMindmap(code ? code.textContent : pre.textContent);
         if (diagram) { pre.parentNode.replaceChild(diagram, pre); return; }
       }
@@ -438,12 +491,13 @@
 
       if (lang && global.hljs && hljs.getLanguage(lang)) {
         try { hljs.highlightElement(code); } catch (e) { /* 忽略单个块的高亮失败 */ }
+        if (code) enrichFlatSql(code);
       }
 
-      if (lang) {
+      if (rawLang) {
         var tag = document.createElement('span');
         tag.className = 'code-lang';
-        tag.textContent = lang;
+        tag.textContent = rawLang;
         wrap.appendChild(tag);
       }
 
@@ -519,6 +573,7 @@
     available: available,
     copyText: copyText,
     highlight: highlight,
+    enrichSql: enrichFlatSql,
     slugifyHeading: slugifyHeading,
     normalizeHeadings: normalizeHeadings,
     esc: esc,

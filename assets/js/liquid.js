@@ -281,7 +281,7 @@
   /* 卡片 3D 倾斜与镜面高光共用这一次采样：
      --mx/--my 决定光斑落点，--tilt-rx/--tilt-ry 决定倾角，同帧写入，两者永远同步。 */
   var TILT_MAX = 9;                       // 卡片最大倾角（度）
-  var CARD_SEL = '.note-card, .card';
+  var CARD_SEL = '.note-card, .card, .tool-card';
   var sheenTilt = null;                   // ['Xdeg','Ydeg']；非卡片为 null
 
   var paintSheen = raf(function () {
@@ -313,7 +313,7 @@
   function onPointerOver(e) {
     if (reduced() || e.pointerType !== 'mouse') return;
     var t = e.target;
-    var el = t && t.closest ? t.closest('.note-card, .card, .hero, .load-more, .side-list a, .tag, .tag-cloud-lg a') : null;
+    var el = t && t.closest ? t.closest('.note-card, .card, .tool-card, .hero, .load-more, .side-list a, .tag, .tag-cloud-lg a') : null;
     if (el === sheenEl) return;
     /* 离开卡片时把倾角归零，回正交给 CSS 过渡，避免瞬间弹平 */
     if (sheenEl && sheenEl !== el) restTilt(sheenEl);
