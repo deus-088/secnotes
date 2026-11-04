@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4J6qRxUH3EE6EttPQcVNF3iYSz+NRqcAwKdQbCjQK5w='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Protocol Explorer · Learn how the internet works</title>
+    <meta
+      name="description"
+      content="Watch the internet work, packet by packet. Interactive lessons on HTTP, HTTPS, TCP, UDP, IP, DNS, DHCP, ICMP, SMTP, POP3, IMAP, FTP, SSH and TLS, with every packet decoded byte by byte. In English, Spanish, Portuguese, French, German, Turkish, Indonesian, Japanese, Chinese (Simplified and Traditional), Korean, Hindi, Arabic and Hebrew."
+    />
+    <meta name="author" content="Dilum Sanjaya" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fdfdfe" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1020" media="(prefers-color-scheme: dark)" />
+    <link rel="canonical" href="https://protocol-explorer-alpha.vercel.app/" />
+    <link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./site.webmanifest" />
+
+    <!-- sharing: the card is public/og.png (drawn by scripts/brand-assets.mjs) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Protocol Explorer" />
+    <meta property="og:title" content="Protocol Explorer · Learn how the internet works" />
+    <meta property="og:description" content="Watch the internet work, packet by packet: interactive lessons from DNS and TCP to TLS, with every packet decoded byte by byte." />
+    <meta property="og:url" content="https://protocol-explorer-alpha.vercel.app/" />
+    <meta property="og:image" content="https://protocol-explorer-alpha.vercel.app/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Protocol Explorer: a network diagram with a TLS Server Hello packet travelling from the internet to a laptop's router." />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:locale:alternate" content="pt_BR" />
+    <meta property="og:locale:alternate" content="fr_FR" />
+    <meta property="og:locale:alternate" content="de_DE" />
+    <meta property="og:locale:alternate" content="tr_TR" />
+    <meta property="og:locale:alternate" content="id_ID" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+    <meta property="og:locale:alternate" content="zh_CN" />
+    <meta property="og:locale:alternate" content="zh_TW" />
+    <meta property="og:locale:alternate" content="ko_KR" />
+    <meta property="og:locale:alternate" content="hi_IN" />
+    <meta property="og:locale:alternate" content="ar_AR" />
+    <meta property="og:locale:alternate" content="he_IL" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:creator" content="@DilumSanjaya" />
+    <meta name="twitter:title" content="Protocol Explorer · Learn how the internet works" />
+    <meta name="twitter:description" content="Watch the internet work, packet by packet: interactive lessons from DNS and TCP to TLS, with every packet decoded byte by byte." />
+    <meta name="twitter:image" content="https://protocol-explorer-alpha.vercel.app/og.png" />
+    <meta name="twitter:image:alt" content="Protocol Explorer: a network diagram with a TLS Server Hello packet travelling from the internet to a laptop's router." />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Protocol Explorer",
+        "url": "https://protocol-explorer-alpha.vercel.app/",
+        "description": "Interactive lessons on how internet protocols work, with every packet decoded byte by byte.",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any",
+        "inLanguage": ["en", "es", "pt-BR", "fr", "de", "tr", "id", "ja", "zh-CN", "zh-TW", "ko", "hi", "ar", "he"],
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": { "@type": "Person", "name": "Dilum Sanjaya", "url": "https://x.com/DilumSanjaya" }
+      }
+    </script>
+
+    <script>
+      // the theme, before anything is drawn: the one chosen last time, or the system's
+      try {
+        const saved = localStorage.getItem('protocol-explorer:theme')
+        const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        if (saved) for (const meta of document.querySelectorAll('meta[name="theme-color"]')) meta.content = dark ? '#0b1020' : '#fdfdfe'
+      } catch {
+        document.documentElement.dataset.theme = 'light'
+      }
+    </script>
+    <script type="module" crossorigin src="./assets/index-4NePqLyW.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D7FMEo1m.css">
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>
+      <p style="margin: 40px; font: 16px/1.5 ui-monospace, monospace; color: #00238a">
+        Protocol Explorer animates packets as they travel the network, so it needs JavaScript. Please turn it on to start the lessons.
+      </p>
+    </noscript>
+
+    <!-- 博客整合：返回入口。原站 CSP 为 script-src 'self' + 单一 hash，
+         引外部脚本会被拦，所以这里只用内联样式 + 普通链接。
+         位置贴着屏幕左边缘（实测侧栏列表从 x=31 起），固定在页面任意角落都会压住
+         协议列表项或包表数据，只有这条 22px 的边缘带是真正空白。 -->
+    <a class="pe-back" href="../../index.html" aria-label="返回博客首页" title="返回博客">&lsaquo;</a>
+    <style>
+      .pe-back {
+        position: fixed; left: 0; top: 50%; transform: translateY(-50%);
+        z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
+        width: 22px; height: 72px;
+        border-radius: 0 10px 10px 0;
+        font: 700 15px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        text-decoration: none;
+        color: #00238a; background: rgba(0, 35, 138, .05);
+        border: 1px solid rgba(0, 35, 138, .22); border-left: 0;
+        -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+        opacity: .8; transition: opacity .18s, width .18s;
+      }
+      .pe-back:hover, .pe-back:focus-visible {
+        opacity: 1; width: 32px;
+        background: rgba(0, 35, 138, .12);
+      }
+      html[data-theme="dark"] .pe-back {
+        color: #cfe0ff; background: rgba(232, 238, 255, .09);
+        border-color: rgba(232, 238, 255, .26);
+      }
+      html[data-theme="dark"] .pe-back:hover,
+      html[data-theme="dark"] .pe-back:focus-visible { background: rgba(232, 238, 255, .2); }
+      @media (max-width: 700px) {
+        .pe-back { width: 18px; height: 56px; font-size: 13px; }
+        .pe-back:hover, .pe-back:focus-visible { width: 26px; }
+      }
+      @media (prefers-reduced-motion: reduce) { .pe-back { transition: none; } }
+
+      /* file:// 直接双击本文件时：浏览器会以 CORS 为由拦掉 ES module，#app 永远是空的。
+         用 :empty 兜底一句人话（挂载成功后有子节点，这段自动消失）。
+         延迟 1.6s 才淡入，正常加载时不会闪。 */
+      #app:empty::after {
+        content: "Protocol Explorer 需要 HTTP 环境\A\A 浏览器不允许 file:// 页面加载 ES module。\A 请在博客根目录执行：python -m http.server 8080\A 然后访问 http://127.0.0.1:8080/apps/protocol-explorer/";
+        position: fixed; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        padding: 40px; box-sizing: border-box;
+        text-align: center; white-space: pre-line;
+        font: 400 14px/2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        color: #00238a; background: #fdfdfe;
+        opacity: 0; animation: pe-fallback 0.3s ease 1.6s forwards;
+      }
+      html[data-theme="dark"] #app:empty::after { color: #9db0d8; background: #0b1020; }
+      @keyframes pe-fallback { to { opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) {
+        #app:empty::after { animation: none; opacity: 1; }
+      }
+    </style>
+  </body>
+</html>

@@ -1421,6 +1421,28 @@
       if (state.q) { state.q = ''; syncSearchValue(null); render(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+
+    /* 「工具」是站内独立静态应用（apps/protocol-explorer/）。
+       file:// 下浏览器会以 CORS 为由拦掉它的 ES module，点过去只剩白屏；
+       这里不跳转，直接把原因和启动命令说清楚（站点其余部分仍可 file:// 使用）。 */
+    var toolsLink = $('#navTools');
+    var fileHint = $('#fileHint');
+    if (toolsLink && fileHint) {
+      var hintTimer = 0;
+      var closeHint = function () {
+        clearTimeout(hintTimer);
+        fileHint.classList.remove('is-on');
+      };
+      toolsLink.addEventListener('click', function (e) {
+        if (location.protocol !== 'file:') return;   // 有 HTTP 环境就正常整页跳转
+        e.preventDefault();
+        fileHint.classList.add('is-on');
+        clearTimeout(hintTimer);
+        hintTimer = setTimeout(closeHint, 9000);
+      });
+      var hintX = $('.fh-x', fileHint);
+      if (hintX) hintX.addEventListener('click', closeHint);
+    }
   }
 
   /* ------------------------------------------------------------

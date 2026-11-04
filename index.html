@@ -69,6 +69,9 @@
     <nav class="topnav" id="topnav">
       <a href="#/" data-nav="home">首页</a>
       <a href="#/notes" data-nav="notes">笔记库</a>
+      <!-- 工具：站内独立静态页（apps/protocol-explorer/），不是 hash 路由，点即整页跳转。
+           href 必须写到 index.html：只写目录名时 file:// 下浏览器会列出文件清单。 -->
+      <a href="apps/protocol-explorer/index.html" data-nav="tools" id="navTools">工具</a>
       <a href="javascript:void(0)" id="navFeedback" data-nav="feedback">反馈</a>
     </nav>
 
@@ -91,6 +94,18 @@
   </div>
 </header>
 <div class="site-notice" id="siteNotice" role="status"><span class="sn-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h13a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span><span class="sn-t"><b>维护通知：</b>站点持续更新中... 每周日是固定更新时间可以来看看~</span><button class="sn-x" type="button" aria-label="关闭通知">&times;</button></div>
+
+<!-- file:// 下点「工具」的兜底说明：独立静态应用必须先有 HTTP 环境，
+     否则浏览器会拦掉它的 ES module（表现为白屏或目录清单）。 -->
+<div class="file-hint" id="fileHint" role="status" aria-live="polite">
+  <span class="fh-ic" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4.5"/><path d="M12 16h.01"/></svg></span>
+  <div class="fh-tx">
+    <b>「工具」需要 HTTP 环境</b>
+    <span>它是独立静态应用，<code>file://</code> 下浏览器会拦掉脚本加载。在项目根目录执行
+      <code>python -m http.server 8080</code>，再打开 <code>http://127.0.0.1:8080/</code>。</span>
+  </div>
+  <button class="fh-x" type="button" aria-label="关闭提示">&times;</button>
+</div>
 
 <section class="hero" id="homeHero" hidden aria-label="站点介绍">
   <div class="stage" id="hhStage" aria-hidden="true">
