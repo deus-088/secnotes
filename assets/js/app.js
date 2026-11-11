@@ -1423,7 +1423,10 @@
      移动端导航
      ------------------------------------------------------------ */
   /* ------------------------------------------------------------
-     维护横幅：从右侧滑入，停留 3 秒，再向左滑出并收起
+     维护横幅：从上方轻微落下，停留 3 秒，再向上淡出并收起
+     刻意不用左右平移：横幅是在正常文档流里的块，横向 translate 会让
+     页面产生横向溢出，移动端会把布局视口整体撑宽，fixed 顶栏跟着位移，
+     看起来就像「导航栏也在跟着滑」。
      ------------------------------------------------------------ */
   var noticePlayed = false;
 
@@ -1433,7 +1436,7 @@
     el.dataset.gone = '1';
     var h = el.offsetHeight;
     el.style.transition = 'transform .34s cubic-bezier(.4,0,.2,1), opacity .34s';
-    el.style.transform = 'translate3d(-100%,0,0)';
+    el.style.transform = 'translate3d(0,-8px,0)';
     el.style.opacity = '0';
     setTimeout(function () {
       /* 收起高度，避免横幅消失时正文整体跳一下 */
@@ -1451,7 +1454,7 @@
     }, 350);
   }
 
-  /* 叉叉：立刻走「左出 + 收起」这一套，和自动消失同一条路径 */
+  /* 叉叉：立刻走「上移淡出 + 收起」这一套，和自动消失同一条路径 */
   document.addEventListener('click', function (e) {
     var x = e.target.closest ? e.target.closest('#siteNotice .sn-x') : null;
     if (x) { e.preventDefault(); hideSiteNotice(); }
@@ -1462,7 +1465,7 @@
     if (!el || noticePlayed || el.hidden) return;
     noticePlayed = true;
     if (reduceMotion) { setTimeout(hideSiteNotice, 3000); return; }
-    el.style.transform = 'translate3d(100%,0,0)';
+    el.style.transform = 'translate3d(0,-10px,0)';
     el.style.opacity = '0';
     void el.offsetWidth;                      // 提交起始帧
     el.style.transition = 'transform .42s cubic-bezier(.22,1,.36,1), opacity .42s';
@@ -1716,13 +1719,20 @@
 })();
 
 /* ===== 移动端文章目录（发布层注入）===== */
-(function () {
+(function initToc() {
   var btn = document.getElementById('tocBtn');
   var drawer = document.getElementById('tocDrawer');
   var closeBtn = document.getElementById('tocClose');
   var body = document.body;
   var app = document.getElementById('app');
-  if (!btn || !drawer || !closeBtn || !app) return;
+  if (!btn || !drawer || !closeBtn || !app) {
+    /* app.js 是 head 里动态注入的异步脚本，极端情况下可能早于 body 末尾的
+       抽屉节点执行；直接 return 会让目录按钮永久失效，这里等 DOM ready 再试一次。 */
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initToc, { once: true });
+    }
+    return;
+  }
 
   function isNoteRoute() { return location.hash.indexOf('#/note/') === 0; }
   function openToc() { body.classList.add('toc-open'); drawer.setAttribute('aria-hidden', 'false'); }

@@ -111,6 +111,14 @@ html[data-theme="light"] {
 
 html { scroll-behavior: smooth; }
 
+/* 横向溢出的总闸门。
+   左右抽屉（.sidebar / .toc-drawer）和公告横幅都靠 transform 移到屏幕外，
+   这类「画在视口外」的元素会让移动端 Chrome 把布局视口撑宽（innerWidth 变大），
+   于是 fixed 顶栏跟着变宽、位置偏移，表现为「导航栏跟着横幅一起滑动」，
+   以及目录抽屉打开后整个跑到可视区之外（按了没反应）。
+   clip 不建立滚动容器（不像 hidden），因此不会破坏 position: sticky 与平滑滚动。 */
+html { overflow-x: clip; }
+
 body {
   margin: 0;
   background-color: var(--bg);

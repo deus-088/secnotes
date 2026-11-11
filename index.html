@@ -21,13 +21,13 @@
 <!-- 资源全部走同源相对路径：GitHub Pages 上可立即生效，不经过 jsDelivr 的 @main 缓存 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-dark.min.css" id="hljs-theme-dark">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-light.min.css" id="hljs-theme-light" disabled>
-<script>window.SEC_ASSET_V = '?v=20261104h';</script>
-<link rel="stylesheet" href="assets/css/style.css?v=20261104h">
-<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261104h">
-<link rel="stylesheet" href="assets/css/feedback.css?v=20261104h">
-<link rel="preload" href="assets/js/app.js?v=20261104h" as="script">
-<link rel="stylesheet" href="assets/css/liquid.css?v=20261104h">
-<link rel="stylesheet" href="assets/css/home.css?v=20261104h">
+<script>window.SEC_ASSET_V = '?v=20261113a';</script>
+<link rel="stylesheet" href="assets/css/style.css?v=20261113a">
+<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261113a">
+<link rel="stylesheet" href="assets/css/feedback.css?v=20261113a">
+<link rel="preload" href="assets/js/app.js?v=20261113a" as="script">
+<link rel="stylesheet" href="assets/css/liquid.css?v=20261113a">
+<link rel="stylesheet" href="assets/css/home.css?v=20261113a">
 <script>
 /* 只有直接落在文章页时才预取渲染器：首页/归档/标签页不需要这 177KB */
 (function () {
@@ -92,7 +92,7 @@
     </div>
   </div>
 </header>
-<div class="site-notice" id="siteNotice" role="status"><span class="sn-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h13a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span><span class="sn-t"><b>维护通知：</b>站点持续更新中... 每周日是固定更新时间可以来看看~</span><button class="sn-x" type="button" aria-label="关闭通知">&times;</button></div>
+<div class="site-notice" id="siteNotice" role="status" hidden><span class="sn-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h13a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span><span class="sn-t"><b>维护通知：</b>站点持续更新中... 每周日是固定更新时间可以来看看~</span><button class="sn-x" type="button" aria-label="关闭通知">&times;</button></div>
 
 <section class="hero" id="homeHero" hidden aria-label="站点介绍">
   <div class="stage" id="hhStage" aria-hidden="true">
@@ -216,7 +216,7 @@
      用 ?t=时间戳 强制每次都重新拉；第一次加载完成后才启动 app.js。 -->
 <script>
 (function boot(){
-  var V = '?v=20261104h';
+  var V = '?v=20261113a';
   var SOURCES = ['data/notes.js', 'assets/js/app.js'];
   var i = 0;
   function next(){
@@ -231,10 +231,10 @@
   next();
 })();
 </script>
-<script src="assets/js/home.js?v=20261104h"></script>
-<script src="assets/js/liquid.js?v=20261104h"></script>
-<script src="assets/js/feedback.js?v=20261104h"></script>
-<script src="assets/js/sync-notice.js?v=20261104h"></script>
+<script src="assets/js/home.js?v=20261113a"></script>
+<script src="assets/js/liquid.js?v=20261113a"></script>
+<script src="assets/js/feedback.js?v=20261113a"></script>
+<script src="assets/js/sync-notice.js?v=20261113a"></script>
 <script>(function(){var b=document.getElementById("siteNotice");if(!b)return;var x=b.querySelector(".sn-x");if(x)x.addEventListener("click",function(){sessionStorage.setItem("secnot_notice_closed","1");b.remove();});})();</script>
 <div class="toc-drawer" id="tocDrawer" aria-hidden="true"><div class="drawer-grip" aria-hidden="true"></div><div class="toc-drawer-head"><span>本篇目录</span><button type="button" class="icon-btn" id="tocClose" aria-label="关闭目录">&times;</button></div><nav class="toc" id="tocMobile"></nav></div>
 </body>
