@@ -277,17 +277,18 @@ body.is-home .eyebrow {
   color: rgba(255, 255, 255, .38); font-weight: 500;
 }
 body.is-home .hero h1 {
-  margin: 0; font-size: clamp(26px, 2.7vw, 38px); line-height: 1.3; font-weight: 640;
-  letter-spacing: -.015em; color: #fff;
+  /* 主标题是中文：方块字在同等字号下更占版面，字号抬一档、字距回到正值 */
+  margin: 0; font-size: clamp(27px, 3vw, 41px); line-height: 1.22; font-weight: 660;
+  letter-spacing: .02em; color: #fff;
 }
-/* 署名不跟着加粗，压回细体，形成主副对比 */
+/* 中文主标题不再拆署名；若后续要加细体后缀，保持与主标题同一基线 */
 body.is-home .hero h1 em {
-  font-style: normal; font-weight: 320; color: rgba(255, 255, 255, .6); letter-spacing: -.01em;
+  font-style: normal; font-weight: 320; color: rgba(255, 255, 255, .6); letter-spacing: .01em;
 }
 body.is-home .hero .sub {
-  /* 副标题现在是一句话主张（原设计是一串统计），字号与亮度都提上来，读得清 */
-  margin: 2px 0 0; font-size: 16px; line-height: 1.7; color: rgba(255, 255, 255, .68);
-  font-weight: 450; max-width: 560px; letter-spacing: .02em;
+  /* 副标题换成英文：小字号 + 细体 + 加字距，和中文主标题拉开层级 */
+  margin: 2px 0 0; font-size: 14px; line-height: 1.7; color: rgba(255, 255, 255, .55);
+  font-weight: 400; max-width: 560px; letter-spacing: .055em;
 }
 body.is-home .hero .sub b { color: rgba(255, 255, 255, .78); font-weight: 520; }
 body.is-home .hero .sub i { font-style: normal; color: rgba(255, 255, 255, .22); margin: 0 7px; }
@@ -473,7 +474,9 @@ body.is-home .hh-rv.in { opacity: 1; transform: none; }
   body.is-home .beam { display: none; }
   body.is-home .hero-in { bottom: 11vh; width: calc(100% - 36px); }
   body.is-home .hero-copy { gap: 17px; }
-  body.is-home .hero .sub { font-size: 12.5px; line-height: 1.8; }
+  /* 中文主标题在小屏收一档，保证 320px 宽度内不折行 */
+  body.is-home .hero h1 { font-size: clamp(24px, 7vw, 30px); }
+  body.is-home .hero .sub { font-size: 12px; line-height: 1.8; letter-spacing: .05em; }
   body.is-home .hero .search { height: 54px; border-radius: 15px; }
   body.is-home .hero .search kbd { display: none; }
   body.is-home .hero .hint { display: none; }

@@ -2,9 +2,9 @@
    新增笔记：在 notes/ 目录下新建 .md 文件后重新运行 python build.py */
 window.SEC_BLOG = {
 "config":{
-"title":"我的知识(笔记)库",
-"subtitle":"Knowledge & Notes",
-"description":"这里记录了关于网安（渗透）的一些知识与笔记，我的来时路",
+"title":"Deus's Blog",
+"subtitle":"",
+"description":"网络安全学习笔记",
 "author":"",
 "footer":"©2026 By Deus",
 "defaultTheme":"dark",
@@ -17,7 +17,7 @@ window.SEC_BLOG = {
 "categories":9,
 "tags":20,
 "words":13721,
-"builtAt":"2026-11-13 17:29"
+"builtAt":"2026-11-21 23:31"
 },
 "categories":[
 [
@@ -164,7 +164,7 @@ window.SEC_BLOG = {
 "source":"notes/week2周报.md",
 "words":127,
 "reading_time":1,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -181,7 +181,7 @@ window.SEC_BLOG = {
 "source":"notes/短信验证码常见漏洞.md",
 "words":876,
 "reading_time":3,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -196,7 +196,7 @@ window.SEC_BLOG = {
 "source":"notes/xss二基础概念.md",
 "words":1520,
 "reading_time":4,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -213,7 +213,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入五三种注入位置的注入.md",
 "words":877,
 "reading_time":3,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -230,7 +230,7 @@ window.SEC_BLOG = {
 "source":"notes/week-1-周报.md",
 "words":193,
 "reading_time":1,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -247,7 +247,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入四盲注.md",
 "words":846,
 "reading_time":3,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -264,7 +264,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入三报错注入.md",
 "words":554,
 "reading_time":2,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -282,7 +282,7 @@ window.SEC_BLOG = {
 "source":"notes/短信验证码相关漏洞.md",
 "words":773,
 "reading_time":2,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -299,7 +299,7 @@ window.SEC_BLOG = {
 "source":"notes/独立发现广东佛山一公司存在弱口令及用户枚举.md",
 "words":365,
 "reading_time":1,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -316,7 +316,7 @@ window.SEC_BLOG = {
 "source":"notes/xss一基础.md",
 "words":664,
 "reading_time":2,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -333,7 +333,7 @@ window.SEC_BLOG = {
 "source":"notes/情报收集入门二简单的综合信息收集.md",
 "words":619,
 "reading_time":2,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -353,7 +353,7 @@ window.SEC_BLOG = {
 "source":"notes/立项常见情报收集工具kali.md",
 "words":1250,
 "reading_time":4,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -371,7 +371,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入二.md",
 "words":527,
 "reading_time":2,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -388,7 +388,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入实战.md",
 "words":623,
 "reading_time":2,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -406,7 +406,7 @@ window.SEC_BLOG = {
 "source":"notes/sql注入原理.md",
 "words":632,
 "reading_time":2,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -423,7 +423,7 @@ window.SEC_BLOG = {
 "source":"notes/数据库基础.md",
 "words":174,
 "reading_time":1,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -440,7 +440,7 @@ window.SEC_BLOG = {
 "source":"notes/linux一基础命令.md",
 "words":649,
 "reading_time":2,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -457,7 +457,7 @@ window.SEC_BLOG = {
 "source":"notes/http协议.md",
 "words":1735,
 "reading_time":5,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -475,7 +475,7 @@ window.SEC_BLOG = {
 "source":"notes/ip地址与端口.md",
 "words":578,
 "reading_time":2,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 },
 {
@@ -490,7 +490,7 @@ window.SEC_BLOG = {
 "source":"notes/开始.md",
 "words":139,
 "reading_time":1,
-"updated":"2026-11-13",
+"updated":"2026-11-15",
 "draft":false
 }
 ],

@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark light">
-<meta name="theme-color" content="#0a0e14" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#f6f8fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f8fc" media="(prefers-color-scheme: light)">
 <!-- 首屏就落位已保存的主题，避免浅色用户在深色底上闪一下 -->
 <script>
 (function () {
@@ -21,13 +21,12 @@
 <!-- 资源全部走同源相对路径：GitHub Pages 上可立即生效，不经过 jsDelivr 的 @main 缓存 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-dark.min.css" id="hljs-theme-dark">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-light.min.css" id="hljs-theme-light" disabled>
-<script>window.SEC_ASSET_V = '?v=20261113a';</script>
-<link rel="stylesheet" href="assets/css/style.css?v=20261113a">
-<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261113a">
-<link rel="stylesheet" href="assets/css/feedback.css?v=20261113a">
-<link rel="preload" href="assets/js/app.js?v=20261113a" as="script">
-<link rel="stylesheet" href="assets/css/liquid.css?v=20261113a">
-<link rel="stylesheet" href="assets/css/home.css?v=20261113a">
+<script>window.SEC_ASSET_V = '?v=20261121r';</script>
+<link rel="stylesheet" href="assets/css/style.css?v=20261121r">
+<link rel="stylesheet" href="assets/css/reading.css?v=20261121r">
+<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261121r">
+<link rel="stylesheet" href="assets/css/feedback.css?v=20261121r">
+<link rel="preload" href="assets/js/app.js?v=20261121r" as="script">
 <script>
 /* 只有直接落在文章页时才预取渲染器：首页/归档/标签页不需要这 177KB */
 (function () {
@@ -43,124 +42,69 @@
     });
 })();
 </script>
+<link rel="stylesheet" href="assets/css/redesign.css?v=20261121r">
 <style id="toc-drawer-css">.toc-btn{display:none!important}@media (max-width:900px){.toc-btn{display:inline-flex!important}.toc-btn[hidden]{display:none!important}}.toc-drawer{position:fixed;top:0;right:0;bottom:0;z-index:56;width:288px;max-width:86vw;background:var(--bg);border-left:1px solid var(--border);padding:70px 18px 28px;transform:translateX(103%);transition:transform .24s var(--ease);overflow-y:auto}body.toc-open .toc-drawer{transform:none}body.toc-open .backdrop{opacity:1;visibility:visible}.toc-drawer-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font-size:13px;font-weight:600;color:var(--text-strong)}.toc-drawer .toc{display:block;position:static;top:auto;max-height:none;overflow:visible;padding-bottom:24px}.toc-drawer ul{border-left:1px solid var(--border)}</style></head>
-<body>
+<body class="deus-site">
+<a class="skip-link" href="#app">跳到正文</a>
 
 <div class="progress-bar" id="progressBar"></div>
 
 <header class="topbar">
   <div class="topbar-inner">
-    <div class="nav-brand">
-    <a class="brand" href="#/">
-      <!-- 品牌头像：24px 圆形，靠容器 border-radius + img 的 object-fit: cover 裁切 -->
-      <span class="brand-mark brand-avatar" aria-hidden="true">
-        <img src="assets/brand-avatar.png?v=20261101" alt="">
-      </span>
-      <span class="brand-text">
-        <strong id="brandTitle">Deus's Blog</strong>
-      </span>
-    </a>
-    <div class="npager" id="navPager" hidden>
-      <button type="button" class="np-btn" id="npPrev" aria-label="上一页" title="上一页">&lsaquo;</button>
-      <button type="button" class="np-btn" id="npNext" aria-label="下一页" title="下一页">&rsaquo;</button>
-    </div>
-    </div>
-
-    <nav class="topnav" id="topnav">
-      <a href="#/" data-nav="home">首页</a>
-      <a href="#/notes" data-nav="notes">笔记库</a>
-      <!-- 工具：站内页面（#/tools），卡片里再进各个独立应用 -->
-      <a href="#/tools" data-nav="tools" id="navTools">工具</a>
-      <a href="javascript:void(0)" id="navFeedback" data-nav="feedback">反馈</a>
+    <nav class="topnav" id="topnav" aria-label="主导航">
+      <span class="nav-highlight" aria-hidden="true"></span>
+      <a href="#/" data-nav="home"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M6 9v11h5v-6h3v6h4V9"/></svg>首页</a>
+      <a href="#/notes" data-nav="notes"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 4v16m3-11h4m-4 4h4"/></svg>笔记库</a>
+      <a href="#/tools" data-nav="tools" id="navTools"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m-13 6h18m-11 0v2h4v-2"/></svg>工具</a>
+      <a href="#/archive" data-nav="archive"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v4H4zM6 9v10h12V9m-8 4h4"/></svg>归档</a>
+      <a href="#/tags" data-nav="tags"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8" cy="8" r="1"/></svg>标签</a>
+    <a href="javascript:void(0)" id="navFeedback" data-nav="feedback">反馈</a>
     </nav>
 
     <div class="topbar-actions">
-      <button class="icon-btn menu-btn" id="menuBtn" aria-label="打开导航菜单">
-        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"/></svg>
+      <div class="npager" id="navPager" hidden>
+        <button type="button" class="np-btn" id="npPrev" aria-label="上一页" title="上一页">&lsaquo;</button>
+        <button type="button" class="np-btn" id="npNext" aria-label="下一页" title="下一页">&rsaquo;</button>
+      </div>
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="打开导航菜单" aria-controls="sidebar" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+          <rect x="3.5" y="4.5" width="17" height="15" rx="3"/>
+          <path class="panel-divider" d="M10 5v14"/><path class="panel-detail" d="M6.5 9v6"/>
+        </svg>
       </button>
-      <a class="gh-link" href="https://github.com/deus-088" target="_blank" rel="noopener noreferrer" aria-label="GitHub 主页" title="GitHub">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-        <span>GitHub</span>
-      </a>
       <button class="icon-btn toc-btn" id="tocBtn" aria-label="目录" title="目录" hidden><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M3 6h.01M3 12h.01M3 18h.01" stroke-width="3"/></svg></button>
-      <button class="icon-btn" id="searchToggle" aria-label="搜索">
+      <button class="icon-btn" id="searchToggle" aria-label="搜索笔记" aria-haspopup="dialog" aria-controls="noteSearch">
         <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       </button>
       <button class="icon-btn" id="themeToggle" aria-label="切换主题">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" aria-hidden="true">
+          <g class="theme-sun"><circle cx="12" cy="12" r="4"/><path class="sun-rays" d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19m0-14-1.5 1.5m-11 11L5 19"/></g>
+          <g class="theme-moon"><path d="M20.5 13A8 8 0 1 1 11 3.5 7 7 0 0 0 20.5 13Z"/><path d="M18 3v4m-2-2h4"/></g>
+        </svg>
       </button>
     </div>
   </div>
 </header>
 <div class="site-notice" id="siteNotice" role="status" hidden><span class="sn-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h13a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span><span class="sn-t"><b>维护通知：</b>站点持续更新中... 每周日是固定更新时间可以来看看~</span><button class="sn-x" type="button" aria-label="关闭通知">&times;</button></div>
 
-<section class="hero" id="homeHero" hidden aria-label="站点介绍">
-  <div class="stage" id="hhStage" aria-hidden="true">
-    <div class="band">
-      <div class="band-layer wm-glow"><div class="track" data-hh-track><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span></div></div>
-      <div class="band-layer wm-blur"><div class="track" data-hh-track><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span><span>Deus's Blog</span></div></div>
-    </div>
-    <div class="ball" id="hhBall">
-      <div class="ball-clip"><canvas id="hhCanvas"></canvas></div>
-      <div class="ball-rim"></div>
-      <div class="ball-ca"></div>
-      <div class="ball-glare"></div>
-    </div>
-    <div class="beam" id="hhBeam"><div class="beam-spin"></div></div>
+<section class="site-intro" id="homeHero" aria-label="站点介绍">
+  <div class="intro-art" aria-hidden="true"></div>
+  <div class="intro-content">
+    <p id="hhTitle" class="intro-title" role="heading" aria-level="1">Deus's Blog</p>
+    <p class="intro-welcome">欢迎来到Deus的小窝</p>
   </div>
-
-  <div class="hero-in">
-    <div class="hero-copy" id="hhCopy">
-      <p class="eyebrow hh-rv">Personal Security Notes</p>
-      <h1 class="hh-rv" id="hhTitle">A Knowledge Base and Blog <em>——By Deus</em></h1>
-      <p class="sub hh-rv" id="hhSub"></p>
-      <form class="search hh-rv" id="hhSearchForm" role="search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
-        <input type="search" id="heroSearch" placeholder="搜索笔记：SQL 注入、XSS…" aria-label="搜索笔记" autocomplete="off">
-        <kbd>/</kbd>
-        <button class="go" type="submit" aria-label="搜索">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </button>
-      </form>
-      <div class="cta hh-rv">
-        <a class="btn btn-primary" href="#/notes">浏览全部笔记
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
-        <a class="btn btn-ghost" href="javascript:void(0)" data-scroll-cats>按分类查找</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="hint" aria-hidden="true"><span>Scroll</span><i></i></div>
 </section>
 
 <div class="layout">
-  <aside class="sidebar" id="sidebar">
-<div class="drawer-grip" aria-hidden="true"></div>
+  <aside class="sidebar" id="sidebar" aria-label="本站导航">
+    <button type="button" id="navClose" class="icon-btn sidebar-close" aria-label="关闭导航">×</button>
     <div class="side-block" id="sideSearch">
-      <!-- 移动端只露这一个按钮，点开才展开输入框（桌面端按钮隐藏、输入框常显） -->
-      <button class="drawer-action drawer-only" id="drawerSearchBtn" type="button" aria-expanded="false">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <span>搜索笔记</span>
-      </button>
       <div class="search-box">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input type="search" id="searchInput" placeholder="搜索笔记  （按 / 聚焦）" autocomplete="off">
+        <input type="search" id="searchInput" aria-label="检索笔记库" placeholder="搜索笔记库" autocomplete="off">
         <button class="clear-btn" id="searchClear" hidden aria-label="清空">×</button>
       </div>
       <div class="search-hint" id="searchHint" hidden></div>
-    </div>
-
-    <!-- 反馈 与 亮暗切换 并排，挂在搜索下面（和 归档/标签 同样的两列布局） -->
-    <div class="drawer-pair drawer-only" id="drawerPair">
-      <a class="drawer-action" href="javascript:void(0)" id="mobileFeedback" data-nav="feedback">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.9-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/></svg>
-        <span>反馈</span>
-      </a>
-      <button class="drawer-action" id="drawerTheme" type="button">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
-        <span>亮暗切换</span>
-      </button>
     </div>
 
     <div class="side-block" id="sideTree">
@@ -177,14 +121,6 @@
     </div>
 
 
-    <div class="side-block drawer-only" id="drawerShortcuts">
-      <h4>归档与标签</h4>
-      <div class="shortcut-row">
-        <a href="#/archive">归档</a>
-        <a href="#/tags">标签</a>
-      </div>
-    </div>
-
     <div class="side-block side-stats" id="sideStats">
       <h4>笔记库</h4>
       <div class="stat-grid">
@@ -197,26 +133,80 @@
     </div>
   </aside>
 
-  <main class="main" id="app"></main>
+  <main class="main" id="app" tabindex="-1"></main>
 </div>
 
-<footer class="footer">
+<footer class="footer site-footer">
   <div class="footer-inner">
-    <span id="footerText"></span>
+    <div class="footer-brand">
+      <a href="#/" class="footer-name">Deus's Blog</a>
+      <p id="footerQuote"></p>
+      <nav aria-label="页脚链接">
+        <a href="sitemap.xml">站点地图</a>
+        <button type="button" data-open-feedback>反馈</button>
+        <a href="https://github.com/deus-088" rel="noopener noreferrer" target="_blank">GitHub</a>
+      </nav>
+    </div>
+    <div class="footer-status">
+      <button type="button" class="footer-cat" id="catToggle" aria-expanded="false" aria-controls="footerCat" aria-label="呼唤小猫">⌁</button>
+      <div id="footerCat" class="cat-popup" hidden>
+        <span class="cat-face" aria-hidden="true"></span><span>喵，读累了就歇一会儿吧。</span>
+      </div>
+      <p id="siteUptime" hidden></p>
+      <p>访客 <span data-stat="visitors">—</span> · 访问 <span data-stat="views">—</span></p>
+    </div>
+    <small id="footerText"></small>
   </div>
 </footer>
 
 <div class="backdrop" id="backdrop"></div>
 
-<button class="to-top" id="toTop" hidden aria-label="回到顶部">
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+<div class="site-companion">
+  <p id="companionMessage" role="status" hidden></p>
+  <button type="button" id="companionToggle" class="companion-button" aria-label="和桌面伙伴打招呼">
+    <span class="companion-screen" aria-hidden="true"><i></i><i></i></span>
+    <span class="companion-leg" aria-hidden="true"></span>
+  </button>
+</div>
+<button class="to-top" id="toTop" type="button" hidden aria-label="回到顶部">
+  <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c4 4 6 8 4 14H8C6 10 8 6 12 2Z"/><path d="m8 12-3 3v4l4-3m7-4 3 3v4l-4-3m-5 3 2 3 2-3"/><circle cx="12" cy="10" r="1.5"/></svg>
 </button>
+
+<dialog id="noteSearch" class="note-search" aria-labelledby="noteSearchTitle">
+  <form id="noteSearchForm" role="search">
+    <div class="note-search-heading">
+      <h2 id="noteSearchTitle">搜索笔记</h2>
+      <button class="icon-btn" id="noteSearchClose" type="button" aria-label="关闭搜索">×</button>
+    </div>
+    <div class="note-search-field">
+      <input id="noteSearchInput" type="search" aria-label="关键词" placeholder="标题、标签或正文" autocomplete="off" required autofocus>
+      <button class="surface-button" type="submit">搜索</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="profilePanel" class="profile-panel" aria-labelledby="profileName">
+  <button type="button" class="icon-btn profile-close" id="profileClose" aria-label="关闭个人信息">×</button>
+  <img class="profile-avatar" src="assets/brand-avatar.png" alt="Deus 的头像" width="76" height="76">
+  <h2 id="profileName">Deus</h2>
+  <a class="profile-github" href="https://github.com/deus-088" target="_blank" rel="noopener noreferrer">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true"><path d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.77-.24.77-.54v-2.08c-3.13.68-3.79-1.33-3.79-1.33-.51-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.68.08-.68 1.13.08 1.72 1.16 1.72 1.16 1 1.72 2.63 1.22 3.27.93.1-.73.4-1.22.71-1.5-2.5-.28-5.13-1.25-5.13-5.57 0-1.23.44-2.23 1.16-3.02-.12-.28-.5-1.43.11-2.98 0 0 .95-.3 3.08 1.15a10.7 10.7 0 0 1 5.61 0c2.13-1.45 3.07-1.15 3.07-1.15.62 1.55.23 2.7.12 2.98.72.8 1.15 1.8 1.15 3.02 0 4.33-2.63 5.29-5.14 5.57.4.35.76 1.03.76 2.08v3.07c0 .3.2.65.77.54A11.2 11.2 0 0 0 12 .8Z"/></svg>
+    <span>GitHub <small>@deus-088 ↗</small></span>
+  </a>
+  <button type="button" class="surface-button profile-feedback" data-open-feedback>反馈与联系</button>
+  <button type="button" class="surface-button profile-directory" id="profileDirectory">浏览笔记目录</button>
+</dialog>
+
+<dialog id="imageViewer" class="image-viewer" aria-label="查看大图">
+  <button type="button" class="icon-btn viewer-close" aria-label="关闭大图">×</button>
+  <figure><img alt=""><figcaption></figcaption></figure>
+</dialog>
 
 <!-- data/notes.js 改成按需加载：file:// 与中间代理的强缓存会用旧产物，
      用 ?t=时间戳 强制每次都重新拉；第一次加载完成后才启动 app.js。 -->
 <script>
 (function boot(){
-  var V = '?v=20261113a';
+  var V = '?v=20261121r';
   var SOURCES = ['data/notes.js', 'assets/js/app.js'];
   var i = 0;
   function next(){
@@ -231,11 +221,11 @@
   next();
 })();
 </script>
-<script src="assets/js/home.js?v=20261113a"></script>
-<script src="assets/js/liquid.js?v=20261113a"></script>
-<script src="assets/js/feedback.js?v=20261113a"></script>
-<script src="assets/js/sync-notice.js?v=20261113a"></script>
+
+<script src="assets/js/feedback.js?v=20261121r"></script>
+<script src="assets/js/sync-notice.js?v=20261121r"></script>
 <script>(function(){var b=document.getElementById("siteNotice");if(!b)return;var x=b.querySelector(".sn-x");if(x)x.addEventListener("click",function(){sessionStorage.setItem("secnot_notice_closed","1");b.remove();});})();</script>
 <div class="toc-drawer" id="tocDrawer" aria-hidden="true"><div class="drawer-grip" aria-hidden="true"></div><div class="toc-drawer-head"><span>本篇目录</span><button type="button" class="icon-btn" id="tocClose" aria-label="关闭目录">&times;</button></div><nav class="toc" id="tocMobile"></nav></div>
+<script src="assets/js/redesign.js?v=20261121r"></script>
 </body>
 </html>

@@ -220,30 +220,38 @@
   /* ------------------------------------------------------------
      复制到剪贴板（含无 Clipboard API 时的回退）
      ------------------------------------------------------------ */
-  function fallbackCopy(text, done) {
+  function fallbackCopy(text, done, failed) {
+    var previous = document.activeElement;
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.inset = '0 auto auto 0';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    var ok = false;
     try {
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', '');
-      ta.style.position = 'fixed';
-      ta.style.top = '-1000px';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
+      ta.focus({ preventScroll: true });
       ta.select();
       ta.setSelectionRange(0, ta.value.length);
-      var ok = document.execCommand && document.execCommand('copy');
-      document.body.removeChild(ta);
-      if (ok && done) done();
-    } catch (e) { /* 静默失败，不影响阅读 */ }
+      ok = !!(document.execCommand && document.execCommand('copy'));
+    } catch (e) {
+      ok = false;
+    } finally {
+      ta.remove();
+      if (previous && previous.focus) previous.focus({ preventScroll: true });
+    }
+    if (ok) done();
+    else failed();
   }
 
-  function copyText(text, onDone) {
+  function copyText(text, onDone, onError) {
     var done = onDone || function () {};
+    var failed = onError || function () {};
+    var fallback = function () { fallbackCopy(text, done, failed); };
     if (global.navigator && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
-    } else {
-      fallbackCopy(text, done);
-    }
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else fallback();
   }
 
   /* ------------------------------------------------------------
@@ -494,11 +502,25 @@
         if (code) enrichFlatSql(code);
       }
 
-      if (rawLang) {
-        var tag = document.createElement('span');
-        tag.className = 'code-lang';
-        tag.textContent = rawLang;
-        wrap.appendChild(tag);
+      var toolbar = document.createElement('div');
+      toolbar.className = 'code-toolbar';
+      wrap.insertBefore(toolbar, pre);
+
+      var tag = document.createElement('span');
+      tag.className = 'code-lang';
+      tag.textContent = rawLang || 'text';
+      toolbar.appendChild(tag);
+
+      if (code) {
+        var source = code.textContent;
+        // marked adds a closing newline. Keep it for copying but omit its virtual line.
+        var lineCount = source.replace(/\n$/, '').split('\n').length;
+        var gutter = document.createElement('span');
+        gutter.className = 'code-gutter';
+        gutter.setAttribute('aria-hidden', 'true');
+        gutter.textContent = Array.from({ length: lineCount }, function (_, i) { return i + 1; }).join('\n');
+        pre.insertBefore(gutter, code);
+        pre.setAttribute('tabindex', '0');
       }
 
       if (o.copyBtn !== false) {
@@ -508,17 +530,21 @@
         btn.textContent = '复制';
         btn.setAttribute('aria-label', '复制代码');
         btn.addEventListener('click', function () {
-          var text = code ? code.innerText : pre.innerText;
-          copyText(text, function () {
-            btn.textContent = '已复制';
-            btn.classList.add('done');
-            setTimeout(function () {
+          var text = code ? code.textContent : pre.textContent;
+          function feedback(message, success) {
+            btn.textContent = message;
+            btn.classList.toggle('done', success);
+            if (success) btn.dispatchEvent(new CustomEvent('seccodecopied', { bubbles: true }));
+            clearTimeout(btn.copyReset);
+            btn.copyReset = setTimeout(function () {
               btn.textContent = '复制';
               btn.classList.remove('done');
             }, 1600);
-          });
+          }
+          copyText(text, function () { feedback('已复制', true); },
+            function () { feedback('复制失败', false); });
         });
-        wrap.appendChild(btn);
+        toolbar.appendChild(btn);
       }
     });
 
