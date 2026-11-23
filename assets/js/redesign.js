@@ -21,6 +21,8 @@
   let messageTimer;
   let themeTransition;
   let imageTrigger;
+  let imageAnimation;
+  let imageContentAnimation;
   let activeView;
   let initialRoute = true;
   let categoryCloud;
@@ -64,6 +66,7 @@
   }
 
   function closeDialog(dialog, afterClose, instant = false) {
+    if (dialog === imageViewer) { closeImage(afterClose, instant); return; }
     const entry = dialogs.get(dialog);
     if (!dialog.open || (entry?.closing && !instant)) return;
     if (entry) entry.closing = true;
@@ -83,8 +86,9 @@
     } else animatePopover(entry.surface, false, entry.source, finish);
   }
 
-  function openDialog(dialog, trigger, surface = dialog) {
+  function openDialog(dialog, trigger, surface = dialog, afterOpen) {
     if (dialog.open && !dialogs.get(dialog)?.closing) return;
+    [...floatingPanels.keys()].forEach(hideFloating);
     const source = triggerBounds(trigger);
     const parentDialog = trigger?.closest?.('dialog[open]');
     for (const other of dialogs.keys()) {
@@ -104,7 +108,7 @@
             event.clientY < bounds.top || event.clientY > bounds.bottom)) closeDialog(dialog);
       });
     }
-    animatePopover(surface, true, source);
+    animatePopover(surface, true, source, afterOpen);
   }
 
   function showFloating(element, trigger) {
@@ -122,7 +126,7 @@
     animatePopover(element, false, trigger, () => {
       element.hidden = true;
       clearPopoverPosition(element);
-      if (trigger.matches?.('[data-reward], #catToggle')) trigger.setAttribute('aria-expanded', 'false');
+      if (trigger.matches?.('#catToggle')) trigger.setAttribute('aria-expanded', 'false');
       delete element.dataset.popupState;
       floatingPanels.delete(element);
     });
@@ -207,12 +211,6 @@
     }
   }
 
-  function localImage(value) {
-    if (/^assets\/(?:[\w.-]+\/)*[\w.-]+\.(png|jpe?g|webp|gif|svg)$/i.test(value || '') &&
-        !value.split('/').includes('..')) return value;
-    return webURL(value);
-  }
-
   function identity() {
     const config = site();
     return {
@@ -221,19 +219,6 @@
       description: config.description || '',
       url: webURL(config.siteUrl)
     };
-  }
-
-  function rewardSection() {
-    const methods = [['wechat', '微信'], ['alipay', '支付宝'], ['paypal', 'PayPal'], ['qq', 'QQ']];
-    const buttons = methods.map(([key, label]) =>
-      '<button class="surface-button" type="button" data-reward="' + key +
-      '" aria-expanded="false" aria-controls="rewardPanel">' + label + '</button>').join('');
-    return '<section class="article-extras" aria-label="支持作者"><strong>支持作者</strong>' +
-      '<div class="reward-options">' + buttons + '</div><div id="rewardPanel" class="reward-panel" aria-live="polite" hidden></div></section>';
-  }
-
-  function articleExtras() {
-    return rewardSection();
   }
 
   function page(name, data) {
@@ -312,7 +297,8 @@
     if (document.body.classList.contains('nav-open')) $('#navClose').click();
     document.body.classList.add('toc-open');
     document.body.classList.remove('toc-closing');
-    positionPopover(tocDrawer, tocButton);
+    if (window.matchMedia('(max-width: 650px)').matches) clearPopoverPosition(tocDrawer);
+    else positionPopover(tocDrawer, tocButton);
     animatePopover(tocDrawer, true, tocButton);
     tocDrawer.setAttribute('aria-hidden', 'false');
     tocButton.setAttribute('aria-expanded', 'true');
@@ -408,6 +394,35 @@
     } else if (route.name === 'note' && note) announce('正在阅读「' + note.title + '」');
   }
 
+  // The full-screen viewer owns its glass animation; the reading layout stays untouched.
+  function animateImage(opening, onFinish = () => {}) {
+    const style = getComputedStyle(imageViewer);
+    const visible = {
+      backdropFilter: style.backdropFilter || style.webkitBackdropFilter || 'none',
+      webkitBackdropFilter: style.webkitBackdropFilter || style.backdropFilter || 'none',
+      backgroundColor: style.backgroundColor
+    };
+    const contentOpacity = getComputedStyle($('figure', imageViewer)).opacity;
+    imageAnimation?.cancel();
+    imageContentAnimation?.cancel();
+    imageAnimation = imageContentAnimation = null;
+    if (reducedMotion.matches || !imageViewer.animate) { onFinish(); return; }
+
+    const clear = { backdropFilter: 'blur(0px)', webkitBackdropFilter: 'blur(0px)', backgroundColor: 'rgba(8, 14, 24, 0)' };
+    const timing = { duration: opening ? 360 : 300, easing: 'cubic-bezier(.22, 1, .36, 1)', fill: 'both' };
+    const animation = imageViewer.animate(opening ? [clear, visible] : [visible, clear], timing);
+    imageAnimation = animation;
+    imageContentAnimation = $('figure', imageViewer).animate(
+      opening ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: contentOpacity }, { opacity: 0 }], timing);
+    animation.onfinish = () => {
+      if (imageAnimation !== animation) return;
+      onFinish();
+      animation.cancel();
+      imageContentAnimation?.cancel();
+      imageAnimation = imageContentAnimation = null;
+    };
+  }
+
   function openImage(source) {
     if (!imageViewer.showModal || imageViewer.open) return;
     imageTrigger = source;
@@ -415,29 +430,26 @@
     image.src = source.currentSrc || source.src;
     image.alt = source.alt;
     $('figcaption', imageViewer).textContent = source.alt;
-    openDialog(imageViewer, source);
-    if (!image.complete) image.addEventListener('load', () => {
-      if (imageViewer.open) {
-        finishPopovers();
-        positionPopover(imageViewer, source);
-      }
-    }, { once: true });
+    imageViewer.showModal();
+    dialogs.set(imageViewer, { surface: imageViewer, trigger: source, closing: false });
+    animateImage(true);
   }
 
-  function showReward(button) {
-    const panel = $('#rewardPanel');
-    const method = button.dataset.reward;
-    const wasOpen = button.getAttribute('aria-expanded') === 'true';
-    $$('[data-reward]').forEach(control => control.setAttribute('aria-expanded', 'false'));
-    if (wasOpen) { hideFloating(panel); return; }
-    button.setAttribute('aria-expanded', 'true');
-    const config = site().reward?.[method] || {};
-    const link = webURL(config.url);
-    const code = localImage(config.image);
-    panel.innerHTML = code ? '<img src="' + esc(code) + '" alt="' + esc(button.textContent) + '收款码">' :
-      link ? '<a href="' + esc(link) + '" rel="noopener noreferrer" target="_blank">打开' +
-      esc(button.textContent) + '打赏页面 ↗</a>' : '<p class="component-status">该方式待开通。</p>';
-    showFloating(panel, button);
+  function closeImage(afterClose, instant = false) {
+    const entry = dialogs.get(imageViewer);
+    if (!imageViewer.open || (entry?.closing && !instant)) return;
+    if (entry) entry.closing = true;
+    const finish = () => {
+      dialogs.delete(imageViewer);
+      imageViewer.close();
+      afterClose?.();
+    };
+    if (instant) {
+      imageAnimation?.cancel();
+      imageContentAnimation?.cancel();
+      imageAnimation = imageContentAnimation = null;
+      finish();
+    } else animateImage(false, finish);
   }
 
   tocButton.setAttribute('aria-controls', 'tocDrawer');
@@ -467,8 +479,24 @@
   });
   $('#toTop').addEventListener('click', event => {
     const button = event.currentTarget;
+    if (!reducedMotion.matches) {
+      const bounds = button.getBoundingClientRect();
+      const launch = document.createElement('div');
+      launch.className = 'rocket-launch';
+      launch.style.setProperty('--launch-x', bounds.left + bounds.width / 2 + 'px');
+      launch.style.setProperty('--launch-y', bounds.top + bounds.height / 2 + 'px');
+      launch.innerHTML = '<span class="launch-ship"><span class="launch-exhaust"></span></span>' +
+        '<span class="launch-ring"></span>' +
+        Array.from({ length: 3 }, (_, index) =>
+          '<span class="launch-smoke" style="--smoke-delay:' + index * 90 + 'ms;--smoke-x:' +
+          (index === 1 ? '-38px' : index === 2 ? '38px' : '0') + ';--smoke-y:' +
+          (index === 0 ? '18px' : '8px') + '"></span>').join('');
+      $('.launch-ship', launch).prepend($('.back-top-rocket', button).cloneNode(true));
+      document.body.append(launch);
+      window.setTimeout(() => launch.remove(), 1300);
+    }
     button.classList.add('is-launching');
-    window.setTimeout(() => button.classList.remove('is-launching'), 450);
+    window.setTimeout(() => button.classList.remove('is-launching'), reducedMotion.matches ? 0 : 1300);
     window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
   });
   $('.skip-link').addEventListener('click', event => {
@@ -476,8 +504,18 @@
     $('#app').focus();
     $('#app').scrollIntoView();
   });
-  $('.viewer-close', imageViewer).addEventListener('click', () => closeDialog(imageViewer));
-  imageViewer.addEventListener('close', () => imageTrigger?.focus({ preventScroll: true }));
+  $('.viewer-close', imageViewer).addEventListener('click', () => closeImage());
+  imageViewer.addEventListener('cancel', event => { event.preventDefault(); closeImage(); });
+  imageViewer.addEventListener('click', event => { if (event.target === imageViewer) closeImage(); });
+  imageViewer.addEventListener('close', () => {
+    dialogs.delete(imageViewer);
+    imageTrigger?.focus({ preventScroll: true });
+  });
+  ['wheel', 'touchmove'].forEach(type => imageViewer.addEventListener(type,
+    event => event.preventDefault(), { passive: false }));
+  imageViewer.addEventListener('keydown', event => {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) event.preventDefault();
+  });
   document.addEventListener('seccodecopied', () => announce('代码已复制。'));
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
@@ -491,14 +529,17 @@
   });
   document.addEventListener('click', event => {
     const target = event.target;
+    if (event.detail > 0 && target.closest('#topnav a')) {
+      const nav = $('#topnav');
+      nav.querySelectorAll('a').forEach(link => link.blur());
+      nav.classList.remove('is-previewing');
+    }
     if (target.matches('#postBody img[role="button"]')) openImage(target);
     const feedbackTrigger = target.closest('[data-open-feedback]');
     if (feedbackTrigger) window.SecFeedbackOpen?.(feedbackTrigger);
     for (const [panel, trigger] of floatingPanels) {
       if (!panel.contains(target) && !trigger.contains(target)) hideFloating(panel);
     }
-    const method = target.closest('[data-reward]');
-    if (method) showReward(method);
     const copy = target.closest('[data-copy-site]');
     if (copy) {
       const info = identity();
@@ -727,16 +768,27 @@
   window.addEventListener('resize', () => {
     finishPopovers();
     for (const entry of dialogs.values()) {
+      if (entry.surface === imageViewer) continue;
       entry.source = triggerBounds(entry.trigger);
       positionPopover(entry.surface, entry.source);
     }
     for (const [panel, trigger] of floatingPanels) positionPopover(panel, trigger);
-    if (document.body.classList.contains('toc-open')) positionPopover(tocDrawer, tocButton);
+    if (document.body.classList.contains('toc-open')) {
+      if (window.matchMedia('(max-width: 650px)').matches) clearPopoverPosition(tocDrawer);
+      else positionPopover(tocDrawer, tocButton);
+    }
     if (document.body.classList.contains('nav-open')) positionPopover($('#sidebar'), $('#menuBtn'));
     if (!window.ResizeObserver) layoutCategoryCloud();
     scheduleScrollPresentation();
   }, { passive: true });
   window.addEventListener('pageshow', scheduleScrollPresentation);
+  window.addEventListener('load', () => {
+    const imageUrl = getComputedStyle($('.intro-art')).backgroundImage.match(/url\(["']?(.*?)["']?\)/)?.[1];
+    if (!imageUrl) return;
+    const image = new Image();
+    image.src = new URL(imageUrl, document.baseURI).href;
+    image.decode().catch(() => {});
+  }, { once: true });
   reducedMotion.addEventListener?.('change', scheduleScrollPresentation);
   reducedMotion.addEventListener?.('change', finishPopovers);
   scheduleScrollPresentation();
@@ -800,7 +852,7 @@
   });
 
   window.DeusSite = {
-    page, articleExtras, afterRender, themeSwap, closeToc, animatePopover,
+    page, afterRender, themeSwap, closeToc, animatePopover,
     positionPopover, openDialog, closeDialog, openProfile
   };
 })();

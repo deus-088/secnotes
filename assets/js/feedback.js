@@ -39,10 +39,11 @@
   });
 
   // 弹层
-  var overlay = el("div", "", "fb-overlay");
+  var overlay = el("dialog", "", "fb-overlay");
+  overlay.setAttribute("aria-labelledby", "fbTitle");
   overlay.innerHTML =
     '<div class="fb-modal">' +
-      '<h3>反馈问题</h3>' +
+      '<h3 id="fbTitle">反馈问题</h3>' +
       '<p class="fb-sub">欢迎指出错误、遗漏或改进建议。请先选择一种反馈方式。</p>' +
       '<div class="fb-tabs" id="fbTabs" role="tablist">' +
         '<button type="button" class="fb-tab active" id="fbTabEmail" data-tab="email">方式一 · 邮箱</button>' +
@@ -222,30 +223,37 @@
   // ------------------------------------------------------------------
   // 开关
   // ------------------------------------------------------------------
-  function openPanel() {
+  var feedbackTrigger;
+  function openPanel(trigger) {
+    if (overlay.open) return;
+    feedbackTrigger = trigger || document.querySelector('[data-open-feedback], #navFeedback, #mobileFeedback');
+    if (!feedbackTrigger) return;
     hideTip();
     renderImgs();
     overlay.classList.add("open");
-    setTimeout(function () { textEl.focus(); }, 60);
+    if (window.DeusSite && window.DeusSite.openDialog) {
+      DeusSite.openDialog(overlay, feedbackTrigger, overlay.querySelector('.fb-modal'));
+      (currentTab === "email" ? tabEmail : textEl).focus({ preventScroll: true });
+    } else {
+      overlay.showModal();
+      setTimeout(function () { (currentTab === "email" ? tabEmail : textEl).focus(); }, 60);
+    }
   }
   function closePanel() {
-    overlay.classList.remove("open");
+    if (window.DeusSite && window.DeusSite.closeDialog) DeusSite.closeDialog(overlay);
+    else if (overlay.open) overlay.close();
   }
+  overlay.addEventListener("close", function () { overlay.classList.remove("open"); });
 
   $("fbCancel").addEventListener("click", closePanel);
-  overlay.addEventListener("click", function (e) {
-    if (e.target === overlay) closePanel();
-  });
   submitBtn.addEventListener("click", commit);
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && overlay.classList.contains("open")) closePanel();
-  });
+  document.addEventListener("click", function (event) {
+    var trigger = event.target.closest && event.target.closest("[data-open-feedback], #navFeedback, #mobileFeedback");
+    if (!trigger) return;
+    if (trigger.matches("a")) event.preventDefault();
+    openPanel(trigger);
+  }, true);
 
   // 供导航栏「反馈」入口复用同一弹层（由 deploy.py 把“关于”替换为 #navFeedback）
   window.SecFeedbackOpen = openPanel;
-  function bindTrigger(el) {
-    if (el) el.addEventListener("click", function (e) { e.preventDefault(); openPanel(); });
-  }
-  bindTrigger(document.getElementById("navFeedback"));     // 桌面顶栏
-  bindTrigger(document.getElementById("mobileFeedback"));  // 移动端侧栏抽屉顶部
 })();

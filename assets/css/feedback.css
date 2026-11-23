@@ -31,14 +31,21 @@
   position: fixed;
   inset: 0;
   z-index: 80;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
   display: none;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(4, 8, 12, 0.5);
-  backdrop-filter: blur(3px);
+  background: transparent;
+  overflow: hidden;
 }
-.fb-overlay.open { display: flex; }
+.fb-overlay::backdrop { background: transparent; backdrop-filter: none; }
+.fb-overlay[open] { display: flex; }
 
 /* 弹层卡片 */
 .fb-modal {
@@ -52,6 +59,7 @@
   padding: 20px 22px;
   color: var(--text);
 }
+.deus-site .fb-modal { animation: none; }
 .fb-modal h3 {
   margin: 0 0 4px;
   font-size: 17px;

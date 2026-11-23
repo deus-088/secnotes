@@ -1551,6 +1551,17 @@ html[data-theme="light"] .fb-overlay { background: rgba(20, 24, 30, 0.3); }
   animation: modal-in var(--dur-snappy) var(--spring-snappy) both;
 }
 
+/* Public feedback uses the same restrained glass as the site's other dialogs. */
+.deus-site .fb-modal {
+  border-radius: 16px;
+  border-color: var(--border);
+  background: var(--panel);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: var(--shadow);
+  animation: none;
+}
+
 @keyframes modal-in {
   from { opacity: 0; transform: translateY(14px) scale(0.97); }
   to   { opacity: 1; transform: none; }

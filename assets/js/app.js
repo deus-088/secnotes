@@ -737,7 +737,7 @@
       '<div class="post-body animate" id="postBody"></div>' +
       backlinksSection(n) +
       relatedSection(n) +
-      nav + (window.DeusSite ? DeusSite.articleExtras() : '') + '</div>' +
+      nav + '</div>' +
       '<nav class="toc" id="toc"></nav>' +
       '</article></div>';
   }
@@ -1352,10 +1352,17 @@
       if (window.DeusSite) DeusSite.closeToc();
       searchTrigger = event && event.currentTarget || $('#searchToggle');
       searchField.value = state.q;
-      if (window.DeusSite) DeusSite.openDialog(dialog, searchTrigger);
-      else if (!dialog.open) dialog.showModal();
-      searchField.focus({ preventScroll: true });
-      searchField.select();
+      function focusSearch() {
+        searchField.removeAttribute('tabindex');
+        searchField.focus({ preventScroll: true });
+        searchField.select();
+      }
+      searchField.tabIndex = -1;
+      if (window.DeusSite) DeusSite.openDialog(dialog, searchTrigger, dialog, focusSearch);
+      else {
+        if (!dialog.open) dialog.showModal();
+        focusSearch();
+      }
     }
 
     function closeSearch(afterClose) {
@@ -1528,7 +1535,7 @@
        换页时 hashchange 已经会 scrollTo(0,0)；这里补的正是「本来就在首页、
        hash 没变化 → 不触发 hashchange」的那一半（首页滚到底部时点它们没反应）。 */
     document.addEventListener('click', function (e) {
-      var hit = e.target.closest && e.target.closest('.brand, .topnav a[data-nav="home"]');
+      var hit = e.target.closest && e.target.closest('.brand, .mobile-brand, .topnav a[data-nav="home"]');
       if (!hit) return;
       if (parseRoute().name !== 'home') return;   // 换页交给 hashchange
       if (state.q) { state.q = ''; syncSearchValue(); render(); }

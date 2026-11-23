@@ -21,12 +21,12 @@
 <!-- 资源全部走同源相对路径：GitHub Pages 上可立即生效，不经过 jsDelivr 的 @main 缓存 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-dark.min.css" id="hljs-theme-dark">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-light.min.css" id="hljs-theme-light" disabled>
-<script>window.SEC_ASSET_V = '?v=20261121r';</script>
-<link rel="stylesheet" href="assets/css/style.css?v=20261121r">
-<link rel="stylesheet" href="assets/css/reading.css?v=20261121r">
-<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261121r">
-<link rel="stylesheet" href="assets/css/feedback.css?v=20261121r">
-<link rel="preload" href="assets/js/app.js?v=20261121r" as="script">
+<script>window.SEC_ASSET_V = '?v=20261122b';</script>
+<link rel="stylesheet" href="assets/css/style.css?v=20261122b">
+<link rel="stylesheet" href="assets/css/reading.css?v=20261122b">
+<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261122b">
+<link rel="stylesheet" href="assets/css/feedback.css?v=20261122b">
+<link rel="preload" href="assets/js/app.js?v=20261122b" as="script">
 <script>
 /* 只有直接落在文章页时才预取渲染器：首页/归档/标签页不需要这 177KB */
 (function () {
@@ -42,7 +42,7 @@
     });
 })();
 </script>
-<link rel="stylesheet" href="assets/css/redesign.css?v=20261121r">
+<link rel="stylesheet" href="assets/css/redesign.css?v=20261122b">
 <style id="toc-drawer-css">.toc-btn{display:none!important}@media (max-width:900px){.toc-btn{display:inline-flex!important}.toc-btn[hidden]{display:none!important}}.toc-drawer{position:fixed;top:0;right:0;bottom:0;z-index:56;width:288px;max-width:86vw;background:var(--bg);border-left:1px solid var(--border);padding:70px 18px 28px;transform:translateX(103%);transition:transform .24s var(--ease);overflow-y:auto}body.toc-open .toc-drawer{transform:none}body.toc-open .backdrop{opacity:1;visibility:visible}.toc-drawer-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font-size:13px;font-weight:600;color:var(--text-strong)}.toc-drawer .toc{display:block;position:static;top:auto;max-height:none;overflow:visible;padding-bottom:24px}.toc-drawer ul{border-left:1px solid var(--border)}</style></head>
 <body class="deus-site">
 <a class="skip-link" href="#app">跳到正文</a>
@@ -58,9 +58,18 @@
       <a href="#/tools" data-nav="tools" id="navTools"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m-13 6h18m-11 0v2h4v-2"/></svg>工具</a>
       <a href="#/archive" data-nav="archive"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v4H4zM6 9v10h12V9m-8 4h4"/></svg>归档</a>
       <a href="#/tags" data-nav="tags"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8" cy="8" r="1"/></svg>标签</a>
+      <a href="#/links" class="mobile-nav-link" data-nav="links">友链</a>
+      <button type="button" class="mobile-nav-link mobile-nav-feedback" data-open-feedback>留言</button>
+      
+    <a href="javascript:void(0)" id="navFeedback" data-nav="feedback">反馈</a>
     </nav>
 
+    <a href="#/" class="mobile-brand" aria-label="Deus's Blog 首页">Deus's Blog</a>
+
     <div class="topbar-actions">
+      <a class="icon-btn mobile-rss" href="rss.xml" aria-label="订阅 RSS" title="订阅 RSS">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 19h.01M5 12a7 7 0 0 1 7 7M5 5a14 14 0 0 1 14 14"/></svg>
+      </a>
       <div class="npager" id="navPager" hidden>
         <button type="button" class="np-btn" id="npPrev" aria-label="上一页" title="上一页">&lsaquo;</button>
         <button type="button" class="np-btn" id="npNext" aria-label="下一页" title="下一页">&rsaquo;</button>
@@ -96,6 +105,9 @@
 
 <div class="layout">
   <aside class="sidebar" id="sidebar" aria-label="本站导航">
+<ul class="side-list mobile-feedback" style="margin:0 0 12px">
+<li><a href="javascript:void(0)" id="mobileFeedback" data-nav="feedback" style="font-weight:600">反馈</a></li>
+</ul>
     <button type="button" id="navClose" class="icon-btn sidebar-close" aria-label="关闭导航">×</button>
     <div class="side-block" id="sideSearch">
       <div class="search-box">
@@ -165,8 +177,9 @@
     <span class="companion-leg" aria-hidden="true"></span>
   </button>
 </div>
-<button class="to-top" id="toTop" type="button" hidden aria-label="回到顶部">
-  <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c4 4 6 8 4 14H8C6 10 8 6 12 2Z"/><path d="m8 12-3 3v4l4-3m7-4 3 3v4l-4-3m-5 3 2 3 2-3"/><circle cx="12" cy="10" r="1.5"/></svg>
+<button class="to-top" id="toTop" type="button" hidden aria-label="返回顶部">
+  <span class="back-top-label" aria-hidden="true">回到顶部</span>
+  <svg class="back-top-rocket" viewBox="0 0 32 44" width="30" height="42" fill="none" aria-hidden="true"><g class="rocket-flame"><path d="M12 31q0 7 4 10 4-3 4-10"/><path d="M16 32v4"/></g><g class="rocket-body"><path class="rocket-fins" d="m10 20-5 6v7l7-4m10-9 5 6v7l-7-4"/><path d="M10 29C7 16 11 7 16 3c5 4 9 13 6 26Z"/><path d="M11 29h10l-1 3h-8Z"/><circle cx="16" cy="16" r="3"/></g></svg>
 </button>
 
 <dialog id="noteSearch" class="note-search" aria-labelledby="noteSearchTitle">
@@ -176,7 +189,7 @@
       <button class="icon-btn" id="noteSearchClose" type="button" aria-label="关闭搜索">×</button>
     </div>
     <div class="note-search-field">
-      <input id="noteSearchInput" type="search" aria-label="关键词" placeholder="标题、标签或正文" autocomplete="off" required autofocus>
+      <input id="noteSearchInput" type="search" aria-label="关键词" placeholder="标题、标签或正文" autocomplete="off" required>
       <button class="surface-button" type="submit">搜索</button>
     </div>
   </form>
@@ -203,7 +216,7 @@
      用 ?t=时间戳 强制每次都重新拉；第一次加载完成后才启动 app.js。 -->
 <script>
 (function boot(){
-  var V = '?v=20261121r';
+  var V = '?v=20261122b';
   var SOURCES = ['data/notes.js', 'assets/js/app.js'];
   var i = 0;
   function next(){
@@ -219,10 +232,10 @@
 })();
 </script>
 
-<script src="assets/js/feedback.js?v=20261121r"></script>
-<script src="assets/js/sync-notice.js?v=20261121r"></script>
+<script src="assets/js/feedback.js?v=20261122b"></script>
+<script src="assets/js/sync-notice.js?v=20261122b"></script>
 <script>(function(){var b=document.getElementById("siteNotice");if(!b)return;var x=b.querySelector(".sn-x");if(x)x.addEventListener("click",function(){sessionStorage.setItem("secnot_notice_closed","1");b.remove();});})();</script>
 <div class="toc-drawer" id="tocDrawer" aria-hidden="true"><div class="drawer-grip" aria-hidden="true"></div><div class="toc-drawer-head"><span>本篇目录</span><button type="button" class="icon-btn" id="tocClose" aria-label="关闭目录">&times;</button></div><nav class="toc" id="tocMobile"></nav></div>
-<script src="assets/js/redesign.js?v=20261121r"></script>
+<script src="assets/js/redesign.js?v=20261122b"></script>
 </body>
 </html>

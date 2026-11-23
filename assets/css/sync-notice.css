@@ -37,6 +37,27 @@
   padding: 14px 42px 12px 16px;
   font-family: var(--font-sans, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif);
 }
+.deus-site .sn-card {
+  border-color: var(--border);
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+.deus-site .sn-card::before { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.deus-site .sn-title .sn-badge { background: var(--accent-soft); color: var(--accent); }
+.deus-site .sn-text, .deus-site .sn-text b, .deus-site .sn-opt,
+.deus-site .sn-close { color: var(--text); }
+.deus-site .sn-close { background: color-mix(in srgb, var(--text) 9%, transparent); }
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .deus-site .sn-card {
+    background: linear-gradient(135deg, #ffffff10, #ffffff00 55%),
+      color-mix(in srgb, var(--panel) 68%, transparent);
+    border-color: color-mix(in srgb, var(--border) 65%, #ffffff38);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    box-shadow: inset 0 1px 0 #ffffff24, var(--shadow);
+  }
+}
 /* 顶部细高亮条，模拟 iPhone 灵动岛的强调色 */
 .sn-card::before {
   content: "";
