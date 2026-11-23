@@ -148,7 +148,7 @@ html[data-theme="light"] .deus-site .topbar {
   font-size: 13px;
   font-weight: 560;
 }
-.mobile-brand, .mobile-rss, .deus-site .topnav .mobile-nav-link { display: none; }
+.mobile-brand { display: none; }
 .deus-site .topnav a:is(:hover, :focus-visible) { color: var(--glass-ink); }
 .deus-site .topnav a.active { color: var(--glass-ink); font-weight: 740; }
 .nav-symbol {
@@ -1108,24 +1108,14 @@ html[data-theme="dark"] .deus-site .sn-card {
   .deus-site .mobile-brand { grid-column: 1; grid-row: 1; display: block; min-width: 0; align-self: center; overflow: hidden; color: var(--glass-ink); font-size: 20px; font-weight: 620; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
   .deus-site .topbar-actions { grid-column: 2; grid-row: 1; justify-self: end; gap: 2px; padding: 0; border: 0; }
   .deus-site .topbar-actions .icon-btn { flex: 0 0 32px; width: 32px; height: 36px; }
-  .deus-site .mobile-rss { display: inline-flex; }
   .deus-site #navPager[hidden] { display: none !important; }
-  .deus-site .topnav { grid-row: 2; grid-column: 1 / -1; width: 100%; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; }
+  .deus-site .topnav { grid-row: 2; grid-column: 1 / -1; width: 100%; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
   .deus-site .topnav :is(a, button) { min-width: 0; min-height: 37px; padding: 4px 0 7px; font-size: 12px; }
-  .deus-site .topnav :is([data-nav="notes"], [data-nav="tools"]) { display: none; }
-  .deus-site .topnav .mobile-nav-link { display: inline-flex; }
   .deus-site .topnav .nav-highlight { display: none; }
   .deus-site .topnav :is(a, button)[aria-current="page"]::after { width: 22px; bottom: 2px; left: calc(50% - 11px); height: 3px; border-radius: 4px; }
   .deus-site .topnav .nav-symbol { display: none; }
   .deus-site .toc-drawer { top: auto; right: 0; bottom: 0; left: 0; width: min(650px, 100%); max-height: min(60dvh, 520px); margin: 0 auto; padding: 17px 18px calc(17px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; }
   .deus-site .topbar-actions .npager { display: none !important; }
-  .deus-site .topnav .mobile-nav-feedback { justify-content: center; color: var(--glass-ink); background: none; border: 0; font: inherit; font-weight: 560; cursor: pointer; }
-  .deus-site .topnav .mobile-nav-feedback:focus-visible { outline: 2px solid color-mix(in srgb, var(--glass-ink) 52%, transparent); outline-offset: 2px; border-radius: 99px; }
-  .deus-site .topbar-inner .topnav .mobile-nav-feedback:hover { background: none; }
-  .deus-site .topnav button.mobile-nav-feedback::after {
-    position: absolute; content: ""; height: 3px; width: 22px; bottom: 2px; left: calc(50% - 11px); border-radius: 4px;
-    background: var(--glass-highlight); opacity: 0; transform: scaleX(0); transition: transform .24s var(--ease-out), opacity .2s ease;
-  }
   .feed-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 360px) {

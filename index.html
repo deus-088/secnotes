@@ -21,12 +21,12 @@
 <!-- 资源全部走同源相对路径：GitHub Pages 上可立即生效，不经过 jsDelivr 的 @main 缓存 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-dark.min.css" id="hljs-theme-dark">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deus-088/secnotes@main/assets/vendor/hljs-github-light.min.css" id="hljs-theme-light" disabled>
-<script>window.SEC_ASSET_V = '?v=20261122b';</script>
-<link rel="stylesheet" href="assets/css/style.css?v=20261122b">
-<link rel="stylesheet" href="assets/css/reading.css?v=20261122b">
-<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261122b">
-<link rel="stylesheet" href="assets/css/feedback.css?v=20261122b">
-<link rel="preload" href="assets/js/app.js?v=20261122b" as="script">
+<script>window.SEC_ASSET_V = '?v=20261123b';</script>
+<link rel="stylesheet" href="assets/css/style.css?v=20261123b">
+<link rel="stylesheet" href="assets/css/reading.css?v=20261123b">
+<link rel="stylesheet" href="assets/css/sync-notice.css?v=20261123b">
+<link rel="stylesheet" href="assets/css/feedback.css?v=20261123b">
+<link rel="preload" href="assets/js/app.js?v=20261123b" as="script">
 <script>
 /* 只有直接落在文章页时才预取渲染器：首页/归档/标签页不需要这 177KB */
 (function () {
@@ -42,7 +42,7 @@
     });
 })();
 </script>
-<link rel="stylesheet" href="assets/css/redesign.css?v=20261122b">
+<link rel="stylesheet" href="assets/css/redesign.css?v=20261123b">
 <style id="toc-drawer-css">.toc-btn{display:none!important}@media (max-width:900px){.toc-btn{display:inline-flex!important}.toc-btn[hidden]{display:none!important}}.toc-drawer{position:fixed;top:0;right:0;bottom:0;z-index:56;width:288px;max-width:86vw;background:var(--bg);border-left:1px solid var(--border);padding:70px 18px 28px;transform:translateX(103%);transition:transform .24s var(--ease);overflow-y:auto}body.toc-open .toc-drawer{transform:none}body.toc-open .backdrop{opacity:1;visibility:visible}.toc-drawer-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font-size:13px;font-weight:600;color:var(--text-strong)}.toc-drawer .toc{display:block;position:static;top:auto;max-height:none;overflow:visible;padding-bottom:24px}.toc-drawer ul{border-left:1px solid var(--border)}</style></head>
 <body class="deus-site">
 <a class="skip-link" href="#app">跳到正文</a>
@@ -58,18 +58,11 @@
       <a href="#/tools" data-nav="tools" id="navTools"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m-13 6h18m-11 0v2h4v-2"/></svg>工具</a>
       <a href="#/archive" data-nav="archive"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v4H4zM6 9v10h12V9m-8 4h4"/></svg>归档</a>
       <a href="#/tags" data-nav="tags"><svg class="nav-symbol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8" cy="8" r="1"/></svg>标签</a>
-      <a href="#/links" class="mobile-nav-link" data-nav="links">友链</a>
-      <button type="button" class="mobile-nav-link mobile-nav-feedback" data-open-feedback>留言</button>
-      
-    <a href="javascript:void(0)" id="navFeedback" data-nav="feedback">反馈</a>
     </nav>
 
     <a href="#/" class="mobile-brand" aria-label="Deus's Blog 首页">Deus's Blog</a>
 
     <div class="topbar-actions">
-      <a class="icon-btn mobile-rss" href="rss.xml" aria-label="订阅 RSS" title="订阅 RSS">
-        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 19h.01M5 12a7 7 0 0 1 7 7M5 5a14 14 0 0 1 14 14"/></svg>
-      </a>
       <div class="npager" id="navPager" hidden>
         <button type="button" class="np-btn" id="npPrev" aria-label="上一页" title="上一页">&lsaquo;</button>
         <button type="button" class="np-btn" id="npNext" aria-label="下一页" title="下一页">&rsaquo;</button>
@@ -216,7 +209,7 @@
      用 ?t=时间戳 强制每次都重新拉；第一次加载完成后才启动 app.js。 -->
 <script>
 (function boot(){
-  var V = '?v=20261122b';
+  var V = '?v=20261123b';
   var SOURCES = ['data/notes.js', 'assets/js/app.js'];
   var i = 0;
   function next(){
@@ -232,10 +225,10 @@
 })();
 </script>
 
-<script src="assets/js/feedback.js?v=20261122b"></script>
-<script src="assets/js/sync-notice.js?v=20261122b"></script>
+<script src="assets/js/feedback.js?v=20261123b"></script>
+<script src="assets/js/sync-notice.js?v=20261123b"></script>
 <script>(function(){var b=document.getElementById("siteNotice");if(!b)return;var x=b.querySelector(".sn-x");if(x)x.addEventListener("click",function(){sessionStorage.setItem("secnot_notice_closed","1");b.remove();});})();</script>
 <div class="toc-drawer" id="tocDrawer" aria-hidden="true"><div class="drawer-grip" aria-hidden="true"></div><div class="toc-drawer-head"><span>本篇目录</span><button type="button" class="icon-btn" id="tocClose" aria-label="关闭目录">&times;</button></div><nav class="toc" id="tocMobile"></nav></div>
-<script src="assets/js/redesign.js?v=20261122b"></script>
+<script src="assets/js/redesign.js?v=20261123b"></script>
 </body>
 </html>

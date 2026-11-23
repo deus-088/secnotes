@@ -396,13 +396,14 @@
 
   // The full-screen viewer owns its glass animation; the reading layout stays untouched.
   function animateImage(opening, onFinish = () => {}) {
+    const figure = $('figure', imageViewer);
     const style = getComputedStyle(imageViewer);
     const visible = {
       backdropFilter: style.backdropFilter || style.webkitBackdropFilter || 'none',
       webkitBackdropFilter: style.webkitBackdropFilter || style.backdropFilter || 'none',
       backgroundColor: style.backgroundColor
     };
-    const contentOpacity = getComputedStyle($('figure', imageViewer)).opacity;
+    const contentOpacity = getComputedStyle(figure).opacity;
     imageAnimation?.cancel();
     imageContentAnimation?.cancel();
     imageAnimation = imageContentAnimation = null;
@@ -412,14 +413,22 @@
     const timing = { duration: opening ? 360 : 300, easing: 'cubic-bezier(.22, 1, .36, 1)', fill: 'both' };
     const animation = imageViewer.animate(opening ? [clear, visible] : [visible, clear], timing);
     imageAnimation = animation;
-    imageContentAnimation = $('figure', imageViewer).animate(
-      opening ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: contentOpacity }, { opacity: 0 }], timing);
+    if (window.matchMedia('(min-width: 1101px)').matches) {
+      // Spring only the image; the full-screen glass keeps its own fade.
+      animatePopover(figure, opening, imageTrigger, () => {
+        if (!opening && imageViewer.open) figure.style.opacity = '0';
+      });
+    } else {
+      imageContentAnimation = figure.animate(
+        opening ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: contentOpacity }, { opacity: 0 }], timing);
+    }
     animation.onfinish = () => {
       if (imageAnimation !== animation) return;
       onFinish();
       animation.cancel();
       imageContentAnimation?.cancel();
       imageAnimation = imageContentAnimation = null;
+      figure.style.removeProperty('opacity');
     };
   }
 
@@ -448,6 +457,15 @@
       imageAnimation?.cancel();
       imageContentAnimation?.cancel();
       imageAnimation = imageContentAnimation = null;
+      const figure = $('figure', imageViewer);
+      const spring = popoverAnimations.get(figure);
+      if (spring) {
+        spring.animation.onfinish = null;
+        spring.animation.cancel();
+        popoverAnimations.delete(figure);
+        figure.style.removeProperty('will-change');
+      }
+      figure.style.removeProperty('opacity');
       finish();
     } else animateImage(false, finish);
   }
@@ -621,7 +639,7 @@
     }
 
     function step(now) {
-      if (window.scrollY !== lastApplied) {
+      if (imageViewer.open || window.scrollY !== lastApplied) {
         stop();
         return;
       }
