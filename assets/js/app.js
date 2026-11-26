@@ -220,6 +220,13 @@
       desc: '通过简洁清晰的动画与描述，将计算机网络的各类协议工作原理展示出来，快来看看吧！',
       href: 'apps/protocol-explorer/index.html',
       cta: '立即进入'
+    },
+    {
+      kind: '数据结构与算法',
+      title: '算法可视化实验室',
+      desc: '86 节交互课程，用逐步演示和动态图解学习数据结构、排序、图算法与动态规划。',
+      href: 'apps/byte-sized-algorithms/index.html',
+      cta: '开始学习'
     }
   ];
 
